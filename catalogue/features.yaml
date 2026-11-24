@@ -1,0 +1,234 @@
+# Feature catalogue: the single source of truth for every feature.
+# Templated families expand to one feature per combination of their `expand` values;
+# keys are lowercased after expansion. `legacy` is the column in the 2019 feature table
+# (null, or listed under `legacy_missing`, when 2019 had no such column).
+version: 1
+families:
+  - name: messages
+    origin: "2019"
+    features:
+      - key: msg_n_contacts
+        legacy: msg_n_user
+        unit: people
+        en: Distinct people who wrote in the owner's chats, owner included
+        it: Persone distinte che hanno scritto nelle chat dell'utente, utente incluso
+      - key: msg_per_contact
+        legacy: msg_mess_medi_friend
+        unit: messages
+        en: Messages per distinct person
+        it: Messaggi per persona distinta
+      - key: msg_count
+        legacy: msg_nchar_stats.number
+        unit: messages
+        en: Messages sent and received in the observation window
+        it: Messaggi inviati e ricevuti nella finestra di osservazione
+      - key: msg_chars_total
+        legacy: msg_nchar_stats.total_nchar
+        unit: characters
+        en: Characters across all messages
+        it: Caratteri in tutti i messaggi
+      - key: msg_chars_min
+        legacy: msg_nchar_stats.nchar_per_text.Min.
+        unit: characters
+        en: Length of the shortest message
+        it: Lunghezza del messaggio più corto
+      - key: msg_chars_q1
+        legacy: msg_nchar_stats.nchar_per_text.1st.Qu.
+        unit: characters
+        en: First quartile of message length
+        it: Primo quartile della lunghezza dei messaggi
+      - key: msg_chars_median
+        legacy: msg_nchar_stats.nchar_per_text.Median
+        unit: characters
+        en: Median message length
+        it: Lunghezza mediana dei messaggi
+      - key: msg_chars_mean
+        legacy: msg_nchar_stats.nchar_per_text.Mean
+        unit: characters
+        en: Mean message length
+        it: Lunghezza media dei messaggi
+      - key: msg_chars_q3
+        legacy: msg_nchar_stats.nchar_per_text.3rd.Qu.
+        unit: characters
+        en: Third quartile of message length
+        it: Terzo quartile della lunghezza dei messaggi
+      - key: msg_chars_max
+        legacy: msg_nchar_stats.nchar_per_text.Max.
+        unit: characters
+        en: Length of the longest message
+        it: Lunghezza del messaggio più lungo
+      - key: msg_contact_gini
+        legacy: msg_Gini_freq_user
+        unit: index
+        en: Normalised Gini heterogeneity of messages across people (1 = evenly spread)
+        it: Eterogeneità di Gini normalizzata dei messaggi tra le persone (1 = distribuiti in modo uniforme)
+      - key: msg_contacts_male_share
+        legacy: msg_MFprops.maschi
+        unit: share
+        en: Share of name-classified people in the chats with a male first name
+        it: Quota di persone classificate dal nome con un nome maschile
+      - key: msg_contacts_female_share
+        legacy: msg_MFprops.femmine
+        unit: share
+        en: Share of name-classified people in the chats with a female first name
+        it: Quota di persone classificate dal nome con un nome femminile
+      - key: msg_top1_share
+        legacy: msg_freq_user.freqFriend1
+        unit: share
+        en: Share of messages written by the most frequent sender (often the owner)
+        it: Quota di messaggi scritti dal mittente più frequente (spesso l'utente)
+      - key: msg_top2_share
+        legacy: msg_freq_user.freqFriend2
+        unit: share
+        en: Share of messages written by the second most frequent sender
+        it: Quota di messaggi scritti dal secondo mittente più frequente
+      - key: msg_top3_share
+        legacy: msg_freq_user.freqFriend3
+        unit: share
+        en: Share of messages written by the third most frequent sender
+        it: Quota di messaggi scritti dal terzo mittente più frequente
+      - key: msg_days_active
+        legacy: msg_n_days_active
+        unit: days
+        en: Days with at least one message
+        it: Giorni con almeno un messaggio
+
+  - name: message_hours
+    origin: "2019"
+    template:
+      key: "msg_hour_{hour}"
+      legacy: "msg_freq_ore.{hour}"
+      unit: share
+      en: "Share of messages sent or received between {hour}:00 and {hour}:59"
+      it: "Quota di messaggi inviati o ricevuti tra le {hour}:00 e le {hour}:59"
+    expand:
+      hour: &hours ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+                    "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
+    legacy_missing: ["msg_freq_ore.02"]
+
+  - name: message_weekdays
+    origin: "2019"
+    template:
+      key: "msg_weekday_{day[key]}"
+      legacy: "msg_freq_giorni.{day[legacy]}"
+      unit: share
+      en: "Share of messages sent or received on {day[en]}"
+      it: "Quota di messaggi inviati o ricevuti di {day[it]}"
+    expand:
+      day: &weekdays
+        - {key: mon, legacy: luned, en: Monday, it: lunedì}
+        - {key: tue, legacy: marted, en: Tuesday, it: martedì}
+        - {key: wed, legacy: mercoled, en: Wednesday, it: mercoledì}
+        - {key: thu, legacy: gioved, en: Thursday, it: giovedì}
+        - {key: fri, legacy: venerd, en: Friday, it: venerdì}
+        - {key: sat, legacy: sabat, en: Saturday, it: sabato}
+        - {key: sun, legacy: domenic, en: Sunday, it: domenica}
+
+  - name: wall_hours
+    origin: "2019"
+    template:
+      key: "wall_hour_{hour}"
+      legacy: "wall_freq_ore.{hour}"
+      unit: share
+      en: "Share of wall items between {hour}:00 and {hour}:59"
+      it: "Quota di elementi del diario tra le {hour}:00 e le {hour}:59"
+    expand:
+      hour: *hours
+    legacy_missing: ["wall_freq_ore.02"]
+
+  - name: wall_weekdays
+    origin: "2019"
+    template:
+      key: "wall_weekday_{day[key]}"
+      legacy: "wall_freq_giorni.{day[legacy]}"
+      unit: share
+      en: "Share of wall items on {day[en]}"
+      it: "Quota di elementi del diario di {day[it]}"
+    expand:
+      day: *weekdays
+
+  - name: wall
+    origin: "2019"
+    features:
+      - {key: wall_friendships, legacy: wall_azioni.w_amicizia, unit: items,
+         en: "Wall items about new friendships", it: "Elementi del diario su nuove amicizie"}
+      - {key: wall_status_updates, legacy: wall_azioni.w_stato, unit: items,
+         en: "Status updates", it: "Aggiornamenti di stato"}
+      - {key: wall_likes, legacy: wall_azioni.w_piace, unit: items,
+         en: "Wall items reporting a like", it: "Elementi del diario che riportano un mi piace"}
+      - {key: wall_shared_photos, legacy: wall_azioni.w_condiviso, unit: items,
+         en: "Shared photos", it: "Foto condivise"}
+      - {key: wall_links_by_others, legacy: wall_azioni.w_linkAltri, unit: items,
+         en: "Links others posted on the owner's wall", it: "Link pubblicati da altri sul diario dell'utente"}
+      - {key: wall_links_by_owner, legacy: wall_azioni.w_linkTuo, unit: items,
+         en: "Links the owner shared", it: "Link condivisi dall'utente"}
+      - {key: wall_attended, legacy: wall_azioni.w_partecipato, unit: items,
+         en: "Wall items about attending something", it: "Elementi del diario su partecipazioni"}
+      - {key: wall_posts_by_others, legacy: wall_azioni.w_postInBacheca, unit: items,
+         en: "Posts others wrote on the owner's wall", it: "Post scritti da altri sul diario dell'utente"}
+      - {key: wall_profile_picture_updates, legacy: wall_azioni.w_aggiornImgProf, unit: items,
+         en: "Profile picture updates", it: "Aggiornamenti dell'immagine del profilo"}
+      - {key: wall_new_photos, legacy: wall_azioni.w_nuovaFoto, unit: items,
+         en: "Photos added to albums", it: "Foto aggiunte agli album"}
+      - {key: wall_items_total, legacy: wall_azioni.w_postTotali, unit: items,
+         en: "All wall items in the observation window", it: "Tutti gli elementi del diario nella finestra"}
+      - {key: wall_days_active, legacy: wall_n_days_active, unit: days,
+         en: "Days with at least one wall item", it: "Giorni con almeno un elemento del diario"}
+
+  - name: friends_events
+    origin: "2019"
+    features:
+      - {key: friends_accepted, unit: people, en: "Friends", it: "Amici"}
+      - {key: friends_requests_sent, unit: requests,
+         en: "Friend requests the owner sent", it: "Richieste di amicizia inviate"}
+      - {key: friends_requests_received, unit: requests,
+         en: "Friend requests the owner received", it: "Richieste di amicizia ricevute"}
+      - {key: friends_removed, unit: people, en: "Removed friends", it: "Amici rimossi"}
+      - {key: events_going, unit: events,
+         en: "Events with confirmed attendance", it: "Eventi con partecipazione confermata"}
+      - {key: events_maybe, unit: events, en: "Events answered maybe", it: "Eventi con risposta forse"}
+      - {key: events_declined, unit: events,
+         en: "Events declined", it: "Eventi con partecipazione rifiutata"}
+      - {key: events_no_reply, unit: events,
+         en: "Events without a reply", it: "Eventi senza risposta"}
+
+  - name: dictionary
+    origin: "2019"
+    template:
+      key: "dict_{scope[key]}_{term}"
+      legacy: "{scope[legacy]}.{term}"
+      unit: matches
+      en: "Matches of the 2019 pattern '{term}' in {scope[en]}"
+      it: "Occorrenze del modello 2019 '{term}' {scope[it]}"
+    expand:
+      scope:
+        - {key: owner_group, legacy: user_grp,
+           en: "messages the owner wrote in group chats",
+           it: "nei messaggi scritti dall'utente nelle chat di gruppo"}
+        - {key: owner_personal, legacy: user_personal,
+           en: "messages the owner wrote in one-to-one chats",
+           it: "nei messaggi scritti dall'utente nelle chat private"}
+        - {key: others_group, legacy: others_grp,
+           en: "messages others wrote in group chats",
+           it: "nei messaggi scritti dagli altri nelle chat di gruppo"}
+        - {key: others_personal, legacy: others_personal,
+           en: "messages others wrote in one-to-one chats",
+           it: "nei messaggi scritti dagli altri nelle chat private"}
+      # Quoted on purpose: YAML 1.1 reads a bare `no` as false.
+      term: ["domanda", "esclamativo", "virgole_punti",
+             "EMOTEGOOD", "EMOTELOVE", "EMOTEBAD", "EMOTEWINK", "EMOTESHOCK", "EMOTEAMAZE",
+             "EMOTEZZZ", "EMOTESIII", "EMOTENOOO", "EMOTEAHHH", "EMOTEEHHH", "EMOTEOHOH",
+             "EMOTEIHIH", "EMOTEUHUH", "EMOTEAHAH", "EMOTEEHEH", "EMOTEAZZ", "EMOTEDAIII",
+             "cazzo", "cazzata", "merda", "EMOTEAAA", "EMOTEOOO", "EMOTEEEE", "EMOTELOL",
+             "EMOTESOS", "EMOTEBASTA", "EMOTEWOW",
+             "bello", "sicuro", "NonLoSo", "boh", "bho", "aiuto", "agitat", "ansia", "ragione",
+             "giusto", "scusa", "dispiace", "ascolto", "capisco", "disturbo", "dimmi", "bene",
+             "male", "ok", "mai", "sempre", "impossibile", "io", "lui", "lei", "loro", "voi",
+             "nervoso", "triste", "interessa", "secondoMe", "secondoTe", "vicino", "umore",
+             "nonRiesco", "riesco", "giuMorale", "impazzi", "angoscia", "oppresso",
+             "preoccupato", "sensibile", "incubo", "aspettare", "pensare", "infastidire",
+             "scocciare", "esasperato", "pezzi", "stufo", "accorgersi", "conto", "pazienza",
+             "consapevole", "scrupoloso", "sensato", "responsabile", "inconsciente", "chePalle",
+             "importa", "NonMImporta", "nonImporta", "frustrante", "merito", "colpa",
+             "disperato", "sopportare", "conseguenza", "causa", "perdono", "sento", "comeSento",
+             "senti", "comeSenti", "si", "no", "niente", "assolutamente", "tu"]
