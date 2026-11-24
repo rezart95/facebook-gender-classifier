@@ -30,6 +30,14 @@ references:
     authors:
       - family-names: Finos
         given-names: Livio
+      - family-names: Marino
+        given-names: Claudia
+      - family-names: Meneghetti
+        given-names: Davide
+      - family-names: Righetto
+        given-names: Simone
+      - family-names: Rebecchi
+        given-names: Nicholas
     url: "https://github.com/livioivil/myFBr"
     license: GPL-2.0-or-later
   - type: software
