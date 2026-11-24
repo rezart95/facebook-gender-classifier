@@ -18,10 +18,12 @@ from lxml import etree, html
 def load_tree(path: Path, keep_nesting: bool) -> etree._Element:
     data = path.read_bytes()
     try:
-        return etree.fromstring(data, etree.XMLParser(huge_tree=True))
+        return etree.fromstring(data, etree.XMLParser(resolve_entities=False, huge_tree=True))
     except etree.XMLSyntaxError:
         if keep_nesting:
-            recovered = etree.fromstring(data, etree.XMLParser(recover=True, huge_tree=True))
+            recovered = etree.fromstring(
+                data, etree.XMLParser(recover=True, resolve_entities=False, huge_tree=True)
+            )
             if recovered is not None:
                 return recovered
         return html.fromstring(data)

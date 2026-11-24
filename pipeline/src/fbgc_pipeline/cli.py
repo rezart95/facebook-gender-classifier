@@ -12,7 +12,7 @@ from fbgc_core.settings import PrivateZone, find_repo_root
 from fbgc_pipeline.locate.inventory import inventory_row, summarise_inventory
 from fbgc_pipeline.locate.profile_finder import list_profiles
 
-app = typer.Typer(no_args_is_help=True)
+app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
 
 @app.callback()

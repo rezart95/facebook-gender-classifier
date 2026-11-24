@@ -22,3 +22,31 @@ def test_inventory_counts_exports(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert summary["by_language"] == {"it": 1, "en": 1}
     assert summary["pages_present"]["messages.htm"] == 2
     assert (tmp_path / "private" / "inventory.json").is_file()
+    for code in ("ALPHA", "BETA", "alpha", "beta"):
+        assert code not in result.output
+    rows = json.loads((tmp_path / "private" / "inventory.json").read_text(encoding="utf-8"))
+    assert [(row["folder_code"], row["language"]) for row in rows] == [
+        ("ALPHA", "it"),
+        ("BETA", "en"),
+    ]
+
+
+def test_inventory_survives_an_unreadable_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    raw = tmp_path / "raw"
+    write_fake_export(raw / "wave1" / "alpha", sample_profile())
+    write_fake_export(raw / "wave1" / "beta", sample_profile())
+    (raw / "wave1" / "beta" / "index.htm").write_bytes(b"")
+    monkeypatch.setenv("FBGC_RAW_DIR", str(raw))
+    monkeypatch.setenv("FBGC_PRIVATE_DIR", str(tmp_path / "private"))
+    result = CliRunner().invoke(app, ["inventory"])
+    assert result.exit_code == 0, result.output
+    summary = json.loads(result.output)
+    assert summary["profiles"] == 2
+    assert summary["by_language"] == {"it": 1, "unreadable": 1}
+    assert "beta" not in result.output.lower()
+
+
+def test_tracebacks_never_show_locals() -> None:
+    assert app.pretty_exceptions_show_locals is False

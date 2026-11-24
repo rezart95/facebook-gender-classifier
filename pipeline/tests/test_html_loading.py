@@ -36,3 +36,13 @@ def test_clean_text_normalises_whitespace() -> None:
     node = etree.fromstring("<p>  Giulia \n  <b>Bianchi</b>  </p>")
     assert clean_text(node) == "Giulia Bianchi"
     assert clean_text(None) == ""
+
+
+def test_entities_are_not_resolved(tmp_path: Path) -> None:
+    page = tmp_path / "evil.htm"
+    page.write_text(
+        '<?xml version="1.0"?><!DOCTYPE d [<!ENTITY i "EXPANDED">]>'
+        "<html><body><p>&i;</p></body></html>",
+        encoding="utf-8",
+    )
+    assert "EXPANDED" not in full_text(load_tree(page, keep_nesting=True))
