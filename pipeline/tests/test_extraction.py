@@ -7,8 +7,8 @@ from typer.testing import CliRunner
 from fbgc_core.catalogue import default_catalogue
 from fbgc_pipeline.cli import app
 from fbgc_pipeline.extract.options import FaithfulOptions
-from fbgc_pipeline.extract.profile_extractor import extract_profile
-from fbgc_pipeline.extract.run import run_extraction
+from fbgc_pipeline.extract.profile_extractor import ProfileResult, extract_profile
+from fbgc_pipeline.extract.run import results_frame, run_extraction
 from fbgc_pipeline.locate.profile_finder import ProfileLocation
 from fbgc_pipeline.synthetic.fake_export import write_fake_export
 from fbgc_pipeline.synthetic.samples import sample_profile
@@ -89,3 +89,14 @@ def test_cli_extract(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     result = CliRunner().invoke(app, ["extract", "--window", "all", "--workers", "1"])
     assert result.exit_code == 0, result.output
     assert (tmp_path / "private" / "extract" / "faithful_all_correct.parquet").is_file()
+
+
+def test_feature_columns_are_float64_even_when_every_value_is_whole() -> None:
+    whole = [
+        ProfileResult(1, "ALPHA", "ok", features={"msg_count": 5}),
+        ProfileResult(2, "BETA", "ok", features={"msg_count": 7}),
+    ]
+    frame = results_frame(whole, ["msg_count", "msg_chars_mean"])
+    assert frame["msg_count"].dtype == "float64"
+    assert frame["msg_chars_mean"].dtype == "float64"
+    assert results_frame([], ["msg_count"])["msg_count"].dtype == "float64"

@@ -45,7 +45,8 @@ def results_frame(results: Sequence[ProfileResult], feature_keys: list[str]) -> 
         }
         for r in results
     ]
-    return pd.DataFrame(rows, columns=[*META_COLUMNS, *feature_keys])
+    frame = pd.DataFrame(rows, columns=[*META_COLUMNS, *feature_keys])
+    return frame.astype(dict.fromkeys(feature_keys, "float64"))
 
 
 def summarise_results(

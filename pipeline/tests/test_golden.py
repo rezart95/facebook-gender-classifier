@@ -1,4 +1,5 @@
 import math
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -7,8 +8,10 @@ import pytest
 
 from fbgc_core.catalogue import default_catalogue
 from fbgc_pipeline.validate.golden_compare import (
+    DICTIONARY_FAMILIES,
     compare_columns,
     gender_agreement,
+    non_dictionary,
     values_close,
     values_match,
 )
@@ -126,3 +129,10 @@ def test_load_legacy_features_normalises_and_drops_duplicate_codes(tmp_path: Pat
     legacy = load_legacy_features(path)
     assert list(legacy.index) == ["PQ-ONE"]
     assert legacy.loc["PQ-ONE", "msg_n_user"] == 1.0
+
+
+def test_non_dictionary_drops_the_dictionary_families() -> None:
+    assert DICTIONARY_FAMILIES == ("dictionary",)
+    found = compare_columns(ours_frame([5, 6, 7]), legacy_frame([5, 6, 8]), default_catalogue())
+    dictionary = replace(found[0], family="dictionary")
+    assert non_dictionary([*found, dictionary]) == found
