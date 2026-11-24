@@ -22,3 +22,6 @@ wave2/
 *.rds
 *.parquet
 !data/synthetic/**/*.parquet
+
+# Planning docs (spec, plans, notes) stay on the owner's machine only. Never commit or push them.
+docs/superpowers/

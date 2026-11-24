@@ -4,8 +4,8 @@ A remake of my 2019 bachelor thesis in Statistics (University of Padova, relator
 classifying the gender of Facebook users from their activity and personality scales, using data from
 the DPSS study by Marino, Finos et al. (2017).
 
-Status: part 1a, foundation and faithful extraction. See
-`docs/superpowers/specs/2026-11-23-facebook-gender-classifier-design.md`.
+Status: part 1a, foundation and faithful extraction. See `docs/extraction-golden-report.md` for how
+the recomputed features compare with the 2019 table.
 
 ## Privacy
 
