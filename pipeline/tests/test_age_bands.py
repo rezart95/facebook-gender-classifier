@@ -37,7 +37,8 @@ def test_ages_outside_16_to_60_are_unknown() -> None:
         (40, 2, "all"),
         (None, 0, "unknown"),
         (math.nan, 1, "unknown"),
-        (None, 2, "unknown"),
+        (None, 2, "all"),
+        (math.nan, 2, "all"),
     ],
 )
 def test_age_bands(age: float | None, level: int, band: str) -> None:
@@ -62,10 +63,9 @@ def test_a_small_band_moves_to_a_coarser_level() -> None:
     assert choose_age_level([19, 20, 21, 22, 23], ["F"] * 5, [1] * 5) == 2
 
 
-def test_a_small_unknown_band_fails_at_every_level() -> None:
+def test_a_small_unknown_band_is_absorbed_at_the_coarsest_level() -> None:
     ages: list[float | None] = [19.0] * 10 + [None, None]
-    with pytest.raises(KAnonymityError, match="at least 5 people"):
-        choose_age_level(ages, ["F"] * 12, [1] * 12)
+    assert choose_age_level(ages, ["F"] * 12, [1] * 12) == 2
 
 
 def test_cells_split_by_gender_and_wave() -> None:
@@ -101,10 +101,19 @@ def test_a_realistic_skew_falls_back_to_level_1_when_the_unknown_cells_are_big_e
     assert smallest_cell(level_0, genders, waves) < 5
 
 
-def test_a_thin_unknown_cell_makes_every_level_fail_loudly() -> None:
+def test_a_thin_unknown_cell_resolves_at_the_coarsest_level() -> None:
     spec: dict[tuple[str, int], list[tuple[float | None, int]]] = {
         ("F", 1): [(20, 30), (None, 9)],
         ("M", 1): [(20, 20), (None, 4)],
+    }
+    ages, genders, waves = _cohort(spec)
+    assert choose_age_level(ages, genders, waves) == 2
+
+
+def test_a_gender_wave_group_under_k_fails_even_at_the_coarsest_level() -> None:
+    spec: dict[tuple[str, int], list[tuple[float | None, int]]] = {
+        ("F", 1): [(20, 30), (None, 9)],
+        ("M", 1): [(20, 2), (None, 2)],
     }
     ages, genders, waves = _cohort(spec)
     with pytest.raises(KAnonymityError, match="at least 5 people"):
