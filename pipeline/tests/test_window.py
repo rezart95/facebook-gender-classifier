@@ -59,3 +59,14 @@ def test_filters_drop_messages_and_wall_items_outside_the_window() -> None:
     assert [m.text for m in filter_threads(threads, bounds)[0].messages] == ["in"]
     wall = [WallItem(inside, "a", None), WallItem(outside, "b", None)]
     assert [item.action for item in filter_wall(wall, bounds)] == ["a"]
+
+
+def test_twelve_month_window() -> None:
+    assert window_bounds(END, WindowPolicy.LAST_12_MONTHS) == (
+        datetime(2014, 11, 20, 10, tzinfo=UTC),
+        END,
+    )
+
+
+def test_twelve_month_policy_parses_from_its_cli_value() -> None:
+    assert WindowPolicy("12m") is WindowPolicy.LAST_12_MONTHS

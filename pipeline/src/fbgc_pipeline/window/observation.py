@@ -1,7 +1,8 @@
-"""The observation window: everything, or the 6 months before the download date.
+"""The observation window: everything, or the last N months before the download date.
 
-The thesis says features cover "the last 6 months"; the exact 2019 bounds are
-unknown, so both policies exist and the golden test picks the closer one.
+The 2019 data covers the 12 months before the download date (inferred from the
+data; the theses said 6 months). The other policies stay available for
+comparison.
 """
 
 from __future__ import annotations
@@ -19,6 +20,10 @@ Bounds = tuple[datetime, datetime] | None
 class WindowPolicy(StrEnum):
     ALL = "all"
     LAST_6_MONTHS = "6m"
+    LAST_12_MONTHS = "12m"
+
+
+POLICY_MONTHS = {WindowPolicy.LAST_6_MONTHS: 6, WindowPolicy.LAST_12_MONTHS: 12}
 
 
 def subtract_months(moment: datetime, months: int) -> datetime:
@@ -28,9 +33,10 @@ def subtract_months(moment: datetime, months: int) -> datetime:
 
 
 def window_bounds(downloaded_at: datetime | None, policy: WindowPolicy) -> Bounds:
-    if policy is WindowPolicy.ALL or downloaded_at is None:
+    months = POLICY_MONTHS.get(policy)
+    if months is None or downloaded_at is None:
         return None
-    return (subtract_months(downloaded_at, 6), downloaded_at)
+    return (subtract_months(downloaded_at, months), downloaded_at)
 
 
 def in_window(moment: datetime | None, bounds: Bounds) -> bool:
