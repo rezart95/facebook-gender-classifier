@@ -6,14 +6,19 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+import pandas as pd
 import typer
 
+from fbgc_core.catalogue import default_catalogue
 from fbgc_core.settings import PrivateZone, find_repo_root
 from fbgc_pipeline.extract.options import FaithfulOptions
 from fbgc_pipeline.extract.run import run_extraction
 from fbgc_pipeline.features.faithful.rhythms import WeekdayLabels
 from fbgc_pipeline.locate.inventory import inventory_row, summarise_inventory
 from fbgc_pipeline.locate.profile_finder import list_profiles
+from fbgc_pipeline.validate.golden_compare import compare_columns, gender_agreement
+from fbgc_pipeline.validate.golden_report import render_golden_report
+from fbgc_pipeline.validate.legacy_table import load_legacy_features, load_legacy_gender
 from fbgc_pipeline.window.observation import WindowPolicy
 
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
@@ -57,3 +62,20 @@ def extract(
     options = FaithfulOptions(window, weekday_labels)
     summary = run_extraction(zone.raw_dir, zone.private_dir / "extract", options, workers)
     typer.echo(json.dumps(summary, indent=2))
+
+
+@app.command()
+def golden(
+    features: Path,
+    legacy_features: Path,
+    legacy_info: Path,
+    report: Path = Path("docs/extraction-golden-report.md"),
+) -> None:
+    """Compare faithful features with the 2019 table and write an aggregate-only report."""
+    ours = pd.read_parquet(features)
+    comparisons = compare_columns(ours, load_legacy_features(legacy_features), default_catalogue())
+    agreement = gender_agreement(ours, load_legacy_gender(legacy_info))
+    text = render_golden_report(comparisons, features.stem, agreement)
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(text, encoding="utf-8", newline="\n")
+    typer.echo(text.split("## Worst")[0])
