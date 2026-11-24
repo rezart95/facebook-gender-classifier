@@ -42,9 +42,18 @@ def repo_root() -> Path:
     return find_repo_root(Path(__file__))
 
 
+def report_path(given: Path | None, default: str) -> Path:
+    return given if given is not None else repo_root() / default
+
+
+def write_report(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def private_zone() -> PrivateZone:
     zone = PrivateZone.from_env()
-    zone.check(find_repo_root(Path.cwd()))
+    zone.check(repo_root())
     zone.private_dir.mkdir(parents=True, exist_ok=True)
     return zone
 
@@ -89,7 +98,7 @@ def golden(
     features: Path,
     legacy_features: Path,
     legacy_info: Path,
-    report: Path = Path("docs/extraction-golden-report.md"),
+    report: Path | None = None,
 ) -> None:
     """Compare faithful features with the 2019 table and write an aggregate-only report."""
     ours = pd.read_parquet(features)
@@ -98,8 +107,7 @@ def golden(
     gaps_path = repo_root() / "docs" / "extraction-golden-gaps.md"
     gaps = gaps_path.read_text(encoding="utf-8") if gaps_path.is_file() else None
     text = render_golden_report(comparisons, features.stem, agreement, gaps)
-    report.parent.mkdir(parents=True, exist_ok=True)
-    report.write_text(text, encoding="utf-8", newline="\n")
+    write_report(report_path(report, "docs/extraction-golden-report.md"), text)
     typer.echo(text.split("## Worst")[0])
 
 
@@ -108,7 +116,7 @@ def calibrate_dictionary(
     legacy_features: Path,
     window: WindowPolicy = WindowPolicy.LAST_12_MONTHS,
     workers: int = 4,
-    report: Path = Path("docs/extraction-dictionary-calibration.md"),
+    report: Path | None = None,
 ) -> None:
     """Pick, per rebuilt word, the regex variant that best reproduces the 2019 counts."""
     zone = private_zone()
@@ -118,7 +126,6 @@ def calibrate_dictionary(
     ensure_enough_profiles(len(per_profile))
     choices = choose_variants(per_profile, legacy, entries)
     write_word_entries(choices)
-    report.parent.mkdir(parents=True, exist_ok=True)
     text = render_calibration_report(choices, len(per_profile))
-    report.write_text(text, encoding="utf-8", newline="\n")
+    write_report(report_path(report, "docs/extraction-dictionary-calibration.md"), text)
     typer.echo(f"calibrated {len(choices)} words on {len(per_profile)} profiles")
