@@ -20,7 +20,15 @@ from fbgc_pipeline.extract.options import FaithfulOptions
 from fbgc_pipeline.extract.profile_extractor import ProfileResult, extract_profile
 from fbgc_pipeline.locate.profile_finder import ProfileLocation, list_profiles
 
-META_COLUMNS = ["wave", "folder_code", "status", "language", "gender"]
+META_COLUMNS = [
+    "wave",
+    "folder_code",
+    "status",
+    "language",
+    "gender",
+    "age_at_download",
+    "relationship",
+]
 
 
 def extract_all(
@@ -41,12 +49,14 @@ def results_frame(results: Sequence[ProfileResult], feature_keys: list[str]) -> 
             "status": r.status,
             "language": r.language,
             "gender": r.gender,
+            "age_at_download": r.age_at_download,
+            "relationship": r.relationship,
             **{key: r.features.get(key, math.nan) for key in feature_keys},
         }
         for r in results
     ]
     frame = pd.DataFrame(rows, columns=[*META_COLUMNS, *feature_keys])
-    return frame.astype(dict.fromkeys(feature_keys, "float64"))
+    return frame.astype(dict.fromkeys(["age_at_download", *feature_keys], "float64"))
 
 
 def summarise_results(

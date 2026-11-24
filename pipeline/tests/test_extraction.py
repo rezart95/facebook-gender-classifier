@@ -76,8 +76,16 @@ def test_run_extraction_writes_private_outputs(tmp_path: Path) -> None:
     summary = run_extraction(raw, tmp_path / "out", FaithfulOptions(), workers=1)
     assert summary["by_status"] == {"ok": 2}
     frame = pd.read_parquet(tmp_path / "out" / "faithful_12m_correct.parquet")
-    assert list(frame.columns[:5]) == ["wave", "folder_code", "status", "language", "gender"]
-    assert frame.shape == (2, 5 + 539)
+    assert list(frame.columns[:7]) == [
+        "wave",
+        "folder_code",
+        "status",
+        "language",
+        "gender",
+        "age_at_download",
+        "relationship",
+    ]
+    assert frame.shape == (2, 7 + 539)
     assert (tmp_path / "out" / "faithful_12m_correct_report.json").is_file()
 
 

@@ -1,4 +1,8 @@
-"""Turn one located export into a row of faithful (2019) features."""
+"""Turn one located export into a row of faithful (2019) features plus coarse profile facts.
+
+The birth date and the relationship label stay in memory: only the age at download and a
+relationship category are kept (see fbgc_pipeline.anonymize).
+"""
 
 from __future__ import annotations
 
@@ -6,6 +10,8 @@ import traceback
 from dataclasses import dataclass, field
 from typing import Literal
 
+from fbgc_pipeline.anonymize.age_bands import age_at_download
+from fbgc_pipeline.anonymize.relationship import relationship_category
 from fbgc_pipeline.extract.options import FaithfulOptions
 from fbgc_pipeline.features.faithful.assemble import faithful_features
 from fbgc_pipeline.locate.profile_finder import ProfileLocation
@@ -25,6 +31,8 @@ class ProfileResult:
     gender: str | None = None
     reason: str | None = None
     features: dict[str, float] = field(default_factory=dict)
+    age_at_download: int | None = None
+    relationship: str | None = None
 
 
 def failure_reason(error: BaseException) -> str:
@@ -54,6 +62,15 @@ def extract_profile(location: ProfileLocation, options: FaithfulOptions) -> Prof
         features = faithful_features(
             ExportPages.read(location.root), bounds, options.weekday_labels
         )
-        return ProfileResult(wave, code, "ok", info.language, info.gender, None, features)
+        return ProfileResult(
+            wave,
+            code,
+            "ok",
+            info.language,
+            info.gender,
+            features=features,
+            age_at_download=age_at_download(info.birth_date, info.downloaded_at),
+            relationship=relationship_category(info.relationship),
+        )
     except Exception as error:  # one broken export must not stop the run
         return ProfileResult(wave, code, "failed", reason=failure_reason(error))
