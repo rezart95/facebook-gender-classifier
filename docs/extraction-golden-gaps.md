@@ -1,10 +1,19 @@
-Written by hand from private diagnostics (aggregates only). Re-running `fbgc golden` regenerates the
-tables above and replaces this section, so keep a copy.
+Maintained by hand in `docs/extraction-golden-gaps.md`, from private diagnostics (aggregates only).
+`fbgc golden` copies this file into the report verbatim.
 
-**Target revised (owner decision, 2026-11-24).** The original target was ≥ 95% exact. The port reaches
-70.5% exact, with median correlations of 0.95–0.997 in every family. The remaining differences come from
-quirks of the 2019 R package (myFBr) that the Python port deliberately does not copy. The "then" model in
-part 2 uses the original 2019 table, so the thesis numbers still reproduce exactly.
+**Target revised (owner decision, 2026-11-24).** The original target was ≥ 95% exact.
+
+- **Overall:** the port reaches 70.4% near-exact, or 70.5% within 0.05%.
+- **Non-dictionary columns:** 25.7% near-exact. These 89 columns are the ones not dominated by sparse
+  dictionary counts.
+- **Correlation:** the median correlation is 0.95–0.997 in every family.
+
+The remaining differences come from quirks of the 2019 R package (myFBr) that the Python port deliberately
+does not copy. The "then" model in part 2 uses the original 2019 table, so the thesis numbers still
+reproduce exactly.
+
+Exports with no readable download date are excluded under the 12-month window. Three such exports exist,
+on top of three in unsupported UI languages.
 
 - **Observation window: 12 months, not 6.**
   - The theses describe "the last 6 months". The data shows the 2019 counts cover about one year before
@@ -40,4 +49,4 @@ part 2 uses the original 2019 table, so the thesis numbers still reproduce exact
 - **Length statistics are unrounded.**
   - 321 of 325 2019 mean lengths carry more than 4 significant digits.
   - So 2019 ran on R ≥ 3.4, whose `summary()` does not round. The port matches.
-- **Gender label.** The 2019 and recomputed labels agree for 99.4% of 344 profiles.
+- **Gender label.** The 2019 and recomputed labels agree for 100% of the 342 profiles where both are present.
