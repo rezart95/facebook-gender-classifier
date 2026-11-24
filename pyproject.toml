@@ -1,0 +1,52 @@
+[project]
+name = "fbgc-workspace"
+version = "0.1.0"
+description = "Workspace root for facebook-gender-classifier"
+requires-python = ">=3.12,<3.13"
+dependencies = ["fbgc-core", "fbgc-pipeline"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["core", "pipeline"]
+
+[tool.uv.sources]
+fbgc-core = { workspace = true }
+fbgc-pipeline = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "hypothesis>=6.120",
+  "ruff>=0.8",
+  "pyright>=1.1.390",
+  "pre-commit>=4.0",
+  "lxml-stubs>=0.5",
+  "pandas-stubs>=2.2",
+  "types-PyYAML>=6.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "N"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["fbgc_core", "fbgc_pipeline"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["pathlib.Path", "typer.Option", "typer.Argument"]
+
+[tool.pytest.ini_options]
+testpaths = ["core/tests", "pipeline/tests"]
+markers = ["private: needs the private data zone; never runs in CI"]
+addopts = "-m 'not private' --import-mode=importlib"
+
+[tool.pyright]
+pythonVersion = "3.12"
+include = ["core/src", "pipeline/src"]
+typeCheckingMode = "standard"
+reportMissingTypeStubs = false

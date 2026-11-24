@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it and the original study."
+title: "facebook-gender-classifier"
+authors:
+  - family-names: Abazi
+    given-names: Rezart
+license: GPL-3.0-or-later
+repository-code: "https://github.com/rezart95/facebook-gender-classifier"
+references:
+  - type: article
+    title: "Objective Facebook behaviour: Differences between problematic and non-problematic users"
+    authors:
+      - family-names: Marino
+        given-names: Claudia
+      - family-names: Finos
+        given-names: Livio
+      - family-names: Vieno
+        given-names: Alessio
+      - family-names: Lenzi
+        given-names: Michela
+      - family-names: Spada
+        given-names: Marcantonio M.
+    journal: "Computers in Human Behavior"
+    volume: 73
+    start: 541
+    end: 546
+    year: 2017
+  - type: software
+    title: myFBr
+    authors:
+      - family-names: Finos
+        given-names: Livio
+    url: "https://github.com/livioivil/myFBr"
+    license: GPL-2.0-or-later
+  - type: software
+    title: TextWiller
+    authors:
+      - family-names: Finos
+        given-names: Livio
+    url: "https://github.com/livioivil/TextWiller"
+    license: GPL-2.0-or-later

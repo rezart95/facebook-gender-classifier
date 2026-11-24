@@ -1,0 +1,13 @@
+[project]
+name = "fbgc-core"
+version = "0.1.0"
+description = "Settings and feature catalogue for facebook-gender-classifier"
+requires-python = ">=3.12,<3.13"
+dependencies = ["pydantic>=2.9", "pydantic-settings>=2.6", "pyyaml>=6.0"]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fbgc_core"]

@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+dist/
+build/
+*.egg-info/
+.env
+.env.*
+mlruns/
+node_modules/
+# Private data never lives in this repo. These lines are a second safety net.
+private/
+raw/
+wave1/
+wave2/
+*.RData
+*.Rdata
+*.rda
+*.rds
+*.parquet
+!data/synthetic/**/*.parquet
