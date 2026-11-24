@@ -14,7 +14,7 @@ import sys
 from pathlib import Path, PurePosixPath
 
 MAX_BYTES = 2 * 1024 * 1024
-CODE_PATTERN = re.compile(r"\b[A-Z]{2,3}\d{2,5}\b")
+CODE_PATTERN = re.compile(r"(?<![A-Za-z0-9])[A-Z]{2,3}\d{2,5}(?![A-Za-z0-9])")
 PAGE_SUFFIXES = frozenset({".htm", ".html"})
 PAGE_ALLOWED = ("pipeline/tests/fixtures/", "web/")
 DATA_SUFFIXES = frozenset({".parquet", ".csv", ".dat", ".feather", ".sav"})
@@ -73,7 +73,8 @@ def text_problems(
     for token in sorted(set(CODE_PATTERN.findall(text)) - allowlist):
         shown = token if show_tokens else masked(token)
         problems.append(f"looks like a participant code: {shown} (allowlist it if harmless)")
-    if any(code in text for code in private_codes):
+    upper_text = text.upper()
+    if any(code in upper_text for code in private_codes):
         problems.append("contains a real folder code")
     return problems
 
@@ -84,15 +85,23 @@ def check_file(
     problems = path_problems(rel, len(data))
     if any(code in rel.upper() for code in private_codes):
         problems.append("file name contains a real folder code")
+        rel = "<file name withheld>"
     if PurePosixPath(rel).suffix.lower() not in BINARY_SUFFIXES:
         text = data.decode("utf-8", errors="replace")
         problems += text_problems(text, allowlist, private_codes, show_tokens)
     return [f"{rel}: {problem}" for problem in problems]
 
 
+def split_ls_files(output: str) -> list[str]:
+    """Split `git ls-files -z` output; NUL separation keeps non-ASCII names unquoted."""
+    return [name for name in output.split("\0") if name]
+
+
 def tracked_files() -> list[str]:
-    result = subprocess.run(["git", "ls-files"], check=True, capture_output=True, text=True)
-    return [line for line in result.stdout.splitlines() if line]
+    result = subprocess.run(
+        ["git", "ls-files", "-z"], check=True, capture_output=True, text=True, encoding="utf-8"
+    )
+    return split_ls_files(result.stdout)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -101,7 +110,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="check every tracked file")
     args = parser.parse_args(argv)
     allowlist = load_allowlist()
-    private_codes = load_private_codes(os.environ.get("FBGC_RAW_DIR"))
+    raw_dir = os.environ.get("FBGC_RAW_DIR")
+    if raw_dir and not Path(raw_dir).is_dir():
+        print(
+            "FBGC_RAW_DIR is set but does not exist; the exact-code check is off", file=sys.stderr
+        )
+    private_codes = load_private_codes(raw_dir)
     show_tokens = not os.environ.get("CI")
     problems: list[str] = []
     for name in tracked_files() if args.all else args.files:
