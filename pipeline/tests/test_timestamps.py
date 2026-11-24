@@ -60,6 +60,10 @@ def test_unsupported_language_raises() -> None:
     assert try_parse_fb_timestamp(None) is None
 
 
+def test_bad_utc_offset_is_not_a_timestamp() -> None:
+    assert try_parse_fb_timestamp("Domenica 12 ottobre 2014 alle ore 14:05 UTC+99") is None
+
+
 def test_impossible_date_raises() -> None:
     with pytest.raises(TimestampError):
         parse_fb_timestamp("Lunedì 30 febbraio 2015 alle ore 10:00 UTC+01")

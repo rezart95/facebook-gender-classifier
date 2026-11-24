@@ -28,6 +28,8 @@ from fbgc_pipeline.validate.golden_report import render_golden_report
 from fbgc_pipeline.validate.legacy_table import load_legacy_features, load_legacy_gender
 from fbgc_pipeline.window.observation import WindowPolicy
 
+MIN_PROFILES = 50
+
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
 
@@ -45,6 +47,13 @@ def private_zone() -> PrivateZone:
     zone.check(find_repo_root(Path.cwd()))
     zone.private_dir.mkdir(parents=True, exist_ok=True)
     return zone
+
+
+def ensure_enough_profiles(count: int) -> None:
+    """Refuse to overwrite the dictionary with a calibration made on too few profiles."""
+    if count < MIN_PROFILES:
+        typer.echo(f"only {count} profiles calibrated (need {MIN_PROFILES}); nothing written")
+        raise typer.Exit(1)
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -106,6 +115,7 @@ def calibrate_dictionary(
     legacy = load_legacy_features(legacy_features)
     entries = load_word_entries()
     per_profile = collect_word_counts(zone.raw_dir, set(legacy.index), entries, window, workers)
+    ensure_enough_profiles(len(per_profile))
     choices = choose_variants(per_profile, legacy, entries)
     write_word_entries(choices)
     report.parent.mkdir(parents=True, exist_ok=True)

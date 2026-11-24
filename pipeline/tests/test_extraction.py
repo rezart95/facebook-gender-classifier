@@ -51,6 +51,20 @@ def test_broken_export_becomes_a_failed_row(tmp_path: Path) -> None:
     assert result.reason
 
 
+def test_failure_reason_has_type_and_place_but_no_message(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def explode(path: Path) -> object:
+        raise ValueError("secret message text")
+
+    monkeypatch.setattr("fbgc_pipeline.extract.profile_extractor.parse_index_page", explode)
+    result = extract_profile(ProfileLocation(2, "DELTA", tmp_path), FaithfulOptions())
+    assert result.status == "failed"
+    assert result.reason is not None
+    assert result.reason.startswith("ValueError at fbgc_pipeline.extract.profile_extractor:")
+    assert "secret" not in result.reason
+
+
 def test_default_options_match_the_2019_data() -> None:
     assert FaithfulOptions().label == "12m_correct"
 

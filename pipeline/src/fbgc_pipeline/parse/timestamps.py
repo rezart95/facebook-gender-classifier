@@ -112,8 +112,8 @@ def _build(match: re.Match[str], months: dict[str, int]) -> datetime:
     ampm = match.groupdict().get("ampm")
     if ampm:
         hour = hour % 12 + (12 if ampm.lower() == "pm" else 0)
-    zone = timezone(timedelta(hours=int(match["offset"]) if match["offset"] else 0))
     try:
+        zone = timezone(timedelta(hours=int(match["offset"]) if match["offset"] else 0))
         return datetime(
             int(match["year"]), month, int(match["day"]), hour, int(match["minute"]), tzinfo=zone
         )

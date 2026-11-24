@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import traceback
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -26,8 +27,18 @@ class ProfileResult:
     features: dict[str, float] = field(default_factory=dict)
 
 
+def failure_reason(error: BaseException) -> str:
+    """Exception type and innermost fbgc_pipeline frame; never the message (it can carry text)."""
+    where = ""
+    for frame, line in traceback.walk_tb(error.__traceback__):
+        module = str(frame.f_globals.get("__name__", ""))
+        if module.startswith("fbgc_pipeline"):
+            where = f" at {module}:{line}"
+    return f"{type(error).__name__}{where}"
+
+
 def extract_profile(location: ProfileLocation, options: FaithfulOptions) -> ProfileResult:
-    """Never raises: a broken export becomes a 'failed' row with the error type and message."""
+    """Never raises: a broken export becomes a 'failed' row with the error type and place."""
     wave, code = location.wave, location.folder_code
     try:
         info = parse_index_page(location.root / "index.htm")
@@ -45,4 +56,4 @@ def extract_profile(location: ProfileLocation, options: FaithfulOptions) -> Prof
         )
         return ProfileResult(wave, code, "ok", info.language, info.gender, None, features)
     except Exception as error:  # one broken export must not stop the run
-        return ProfileResult(wave, code, "failed", reason=f"{type(error).__name__}: {error}"[:300])
+        return ProfileResult(wave, code, "failed", reason=failure_reason(error))

@@ -94,7 +94,8 @@ def render_calibration_report(choices: Sequence[WordChoice], profiles: int) -> s
         "",
         f"The rebuilt dictionary words, calibrated on {profiles} profiles. For each word the",
         "variant with the highest exact-match rate against the 2019 counts is kept.",
-        "Aggregates only.",
+        "Calibrated in-sample on the same profiles the golden report compares, "
+        "so these rates are optimistic. Aggregates only.",
         "",
         f"- Words at or above 95% exact matches: {strong} of {len(choices)}",
         "",
