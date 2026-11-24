@@ -13,8 +13,9 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
+from leak_guard_scan import CODE_PATTERN, scannable_text, text_problems
+
 MAX_BYTES = 2 * 1024 * 1024
-CODE_PATTERN = re.compile(r"(?<![A-Za-z0-9])[A-Z]{2,3}\d{2,5}(?![A-Za-z0-9])")
 PAGE_SUFFIXES = frozenset({".htm", ".html"})
 PAGE_ALLOWED = ("pipeline/tests/fixtures/", "web/")
 DATA_SUFFIXES = frozenset(
@@ -24,7 +25,6 @@ DATA_SUFFIXES = frozenset(
 LOCAL_ONLY_PREFIX = "docs/superpowers/"
 DATA_ALLOWED = ("data/synthetic/", "pipeline/src/fbgc_pipeline/features/faithful/data/")
 R_DATA_SUFFIXES = frozenset({".rdata", ".rda", ".rds"})
-BINARY_SUFFIXES = frozenset({".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff2"})
 ALLOWLIST_PATH = Path(__file__).with_name("leak_guard_allowlist.txt")
 WAVE_DIRS = ("wave1", "wave2")
 JUNK_NAMES = frozenset({"__MACOSX", ".DS_Store", ".directory"})
@@ -74,26 +74,10 @@ def path_problems(rel: str, size: int) -> list[str]:
     return problems
 
 
-def masked(token: str) -> str:
-    return token[0] + "*" * (len(token) - 1)
-
-
-def text_problems(
-    text: str, allowlist: set[str], private_codes: set[str], show_tokens: bool
-) -> list[str]:
-    problems = []
-    for token in sorted(set(CODE_PATTERN.findall(text)) - allowlist):
-        shown = token if show_tokens else masked(token)
-        problems.append(f"looks like a participant code: {shown} (allowlist it if harmless)")
-    upper_text = text.upper()
-    if any(code in upper_text for code in private_codes):
-        problems.append("contains a real folder code")
-    return problems
-
-
 def check_file(
     rel: str, data: bytes, allowlist: set[str], private_codes: set[str], show_tokens: bool
 ) -> list[str]:
+    suffix = PurePosixPath(rel).suffix.lower()  # taken before the name may be withheld
     problems = path_problems(rel, len(data))
     if any(code in rel.upper() for code in private_codes):
         problems.append("file name contains a real folder code")
@@ -103,8 +87,10 @@ def check_file(
             "file name looks like a participant code" + (f": {token}" if show_tokens else "")
         )
         rel = rel if show_tokens else "<file name withheld>"
-    if PurePosixPath(rel).suffix.lower() not in BINARY_SUFFIXES:
-        text = data.decode("utf-8", errors="replace")
+    text = scannable_text(suffix, data)
+    if text is None:
+        problems.append("unreadable Parquet file")
+    else:
         problems += text_problems(text, allowlist, private_codes, show_tokens)
     return [f"{rel}: {problem}" for problem in problems]
 

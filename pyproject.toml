@@ -46,6 +46,7 @@ extend-immutable-calls = ["pathlib.Path", "typer.Option", "typer.Argument"]
 testpaths = ["core/tests", "pipeline/tests", "tools/tests"]
 markers = ["private: needs the private data zone; never runs in CI"]
 addopts = "-m 'not private' --import-mode=importlib"
+pythonpath = ["tools"]
 
 [tool.pyright]
 pythonVersion = "3.12"
