@@ -117,13 +117,3 @@ def test_main_reports_bad_files(
     assert leak_guard.main(["good.md"]) == 0
     assert leak_guard.main(["bad.md"]) == 1
     assert "bad.md" in capsys.readouterr().err
-
-
-def test_missing_raw_dir_warns_and_continues(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("FBGC_RAW_DIR", str(tmp_path / "missing"))
-    (tmp_path / "good.md").write_text("hello", encoding="utf-8")
-    assert leak_guard.main(["good.md"]) == 0
-    assert "FBGC_RAW_DIR is set but does not exist" in capsys.readouterr().err

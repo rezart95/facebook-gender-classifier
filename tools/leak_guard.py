@@ -17,12 +17,18 @@ MAX_BYTES = 2 * 1024 * 1024
 CODE_PATTERN = re.compile(r"(?<![A-Za-z0-9])[A-Z]{2,3}\d{2,5}(?![A-Za-z0-9])")
 PAGE_SUFFIXES = frozenset({".htm", ".html"})
 PAGE_ALLOWED = ("pipeline/tests/fixtures/", "web/")
-DATA_SUFFIXES = frozenset({".parquet", ".csv", ".dat", ".feather", ".sav"})
+DATA_SUFFIXES = frozenset(
+    {".parquet", ".csv", ".dat", ".feather", ".sav", ".zip", ".xlsx", ".xls"}
+    | {".pkl", ".pickle", ".npy", ".npz", ".sqlite", ".db", ".sql", ".tsv", ".jsonl"}
+)
+LOCAL_ONLY_PREFIX = "docs/superpowers/"
 DATA_ALLOWED = ("data/synthetic/", "pipeline/src/fbgc_pipeline/features/faithful/data/")
 R_DATA_SUFFIXES = frozenset({".rdata", ".rda", ".rds"})
 BINARY_SUFFIXES = frozenset({".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff2"})
 ALLOWLIST_PATH = Path(__file__).with_name("leak_guard_allowlist.txt")
 WAVE_DIRS = ("wave1", "wave2")
+JUNK_NAMES = frozenset({"__MACOSX", ".DS_Store", ".directory"})
+OFF_WARNING = "exact-code check is off (FBGC_RAW_DIR unset or has no wave folders)"
 
 
 def folder_code(name: str) -> str:
@@ -44,7 +50,11 @@ def load_private_codes(raw_dir: str | None) -> set[str]:
     for wave in WAVE_DIRS:
         folder = Path(raw_dir) / wave
         if folder.is_dir():
-            codes.update(folder_code(entry.name) for entry in folder.iterdir() if entry.is_dir())
+            codes.update(
+                folder_code(entry.name)
+                for entry in folder.iterdir()
+                if entry.is_dir() and entry.name not in JUNK_NAMES and entry.name[0] != "."
+            )
     return codes
 
 
@@ -53,6 +63,8 @@ def path_problems(rel: str, size: int) -> list[str]:
     problems = []
     if size > MAX_BYTES:
         problems.append("larger than 2 MB")
+    if rel.startswith(LOCAL_ONLY_PREFIX):
+        problems.append("planning docs under docs/superpowers/ are local only")
     if suffix in R_DATA_SUFFIXES:
         problems.append("R data files are never committed")
     if suffix in PAGE_SUFFIXES and not rel.startswith(PAGE_ALLOWED):
@@ -86,6 +98,11 @@ def check_file(
     if any(code in rel.upper() for code in private_codes):
         problems.append("file name contains a real folder code")
         rel = "<file name withheld>"
+    for token in sorted(set(CODE_PATTERN.findall(rel)) - allowlist):
+        problems.append(
+            "file name looks like a participant code" + (f": {token}" if show_tokens else "")
+        )
+        rel = rel if show_tokens else "<file name withheld>"
     if PurePosixPath(rel).suffix.lower() not in BINARY_SUFFIXES:
         text = data.decode("utf-8", errors="replace")
         problems += text_problems(text, allowlist, private_codes, show_tokens)
@@ -111,12 +128,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     allowlist = load_allowlist()
     raw_dir = os.environ.get("FBGC_RAW_DIR")
-    if raw_dir and not Path(raw_dir).is_dir():
-        print(
-            "FBGC_RAW_DIR is set but does not exist; the exact-code check is off", file=sys.stderr
-        )
     private_codes = load_private_codes(raw_dir)
     show_tokens = not os.environ.get("CI")
+    if show_tokens and not private_codes:
+        print(OFF_WARNING, file=sys.stderr)
     problems: list[str] = []
     for name in tracked_files() if args.all else args.files:
         path = Path(name)
