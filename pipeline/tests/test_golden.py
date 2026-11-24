@@ -99,9 +99,22 @@ def test_gender_agreement_ignores_non_ok_rows_and_missing_genders() -> None:
 def test_report_has_aggregates_and_no_codes() -> None:
     found = compare_columns(ours_frame([5, 6, 7]), legacy_frame([5, 6, 8]), default_catalogue())
     text = render_golden_report(found, "6m_correct", (3, 1.0))
-    assert "Overall exact-match rate: 50.0%" in text
+    assert "Overall exact-match rate (near-exact): 50.0%" in text
+    assert "Overall within 0.05%: 66.7%" in text
+    assert "Non-dictionary exact-match rate: 50.0%" in text
+    assert "Non-dictionary within 0.05%: 66.7%" in text
+    assert "95%" not in text
+    assert "See docs/extraction-golden-gaps.md." in text
     assert "| messages | 2 |" in text
     assert not any(code in text for code in CODES)
+
+
+def test_report_includes_gaps_text_verbatim() -> None:
+    found = compare_columns(ours_frame([5, 6, 7]), legacy_frame([5, 6, 8]), default_catalogue())
+    gaps = "- **Window.** Hand-written gap line."
+    text = render_golden_report(found, "12m_correct", (3, 1.0), gaps_markdown=gaps)
+    assert gaps in text
+    assert "See docs/extraction-golden-gaps.md." not in text
 
 
 def test_load_legacy_features_normalises_and_drops_duplicate_codes(tmp_path: Path) -> None:

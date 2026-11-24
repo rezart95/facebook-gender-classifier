@@ -7,7 +7,14 @@ import statistics
 from collections import defaultdict
 from collections.abc import Sequence
 
-from fbgc_pipeline.validate.golden_compare import ColumnComparison, overall_exact_rate
+from fbgc_pipeline.validate.golden_compare import (
+    ColumnComparison,
+    non_dictionary,
+    overall_close_rate,
+    overall_exact_rate,
+)
+
+GAPS_POINTER = "See docs/extraction-golden-gaps.md."
 
 
 def _number(value: float) -> str:
@@ -24,11 +31,15 @@ def _sort_key(item: ColumnComparison) -> float:
 
 
 def render_golden_report(
-    comparisons: Sequence[ColumnComparison], options_label: str, gender: tuple[int, float]
+    comparisons: Sequence[ColumnComparison],
+    options_label: str,
+    gender: tuple[int, float],
+    gaps_markdown: str | None = None,
 ) -> str:
     families: dict[str, list[ColumnComparison]] = defaultdict(list)
     for comparison in comparisons:
         families[comparison.family].append(comparison)
+    rest = non_dictionary(comparisons)
     compared = max((comparison.compared for comparison in comparisons), default=0)
     lines = [
         "# Extraction golden report",
@@ -38,36 +49,39 @@ def render_golden_report(
         "",
         f"- Options: `{options_label}`",
         f"- Profiles compared: {compared}",
-        f"- Overall exact-match rate: {overall_exact_rate(comparisons):.1%} (target: at least 95%)",
+        f"- Overall exact-match rate (near-exact): {overall_exact_rate(comparisons):.1%}",
+        f"- Overall within 0.05%: {overall_close_rate(comparisons):.1%}",
+        f"- Non-dictionary exact-match rate: {overall_exact_rate(rest):.1%}",
+        f"- Non-dictionary within 0.05%: {overall_close_rate(rest):.1%}",
         f"- Gender label agreement with 2019: {gender[1]:.1%} of {gender[0]} profiles",
         "",
         "## By family",
         "",
-        "| Family | Columns | Exact-match rate | Median correlation |",
-        "|---|---:|---:|---:|",
+        "| Family | Columns | Exact-match rate | Within 0.05% | Median correlation |",
+        "|---|---:|---:|---:|---:|",
     ]
     for family, items in families.items():
         lines.append(
             f"| {family} | {len(items)} | {overall_exact_rate(items):.1%} | "
-            f"{_median_correlation(items)} |"
+            f"{overall_close_rate(items):.1%} | {_median_correlation(items)} |"
         )
     lines += [
         "",
         "## Worst 25 columns",
         "",
-        "| Feature | 2019 column | Exact | r | Max abs diff |",
-        "|---|---|---:|---:|---:|",
+        "| Feature | 2019 column | Exact | Close | r | Max abs diff |",
+        "|---|---|---:|---:|---:|---:|",
     ]
     for item in sorted(comparisons, key=_sort_key)[:25]:
         lines.append(
             f"| `{item.key}` | `{item.legacy_name}` | {item.exact_rate:.1%} | "
-            f"{_number(item.pearson)} | {_number(item.max_abs_diff)} |"
+            f"{item.close_rate:.1%} | {_number(item.pearson)} | {_number(item.max_abs_diff)} |"
         )
     lines += [
         "",
         "## Known gaps",
         "",
-        "One line per gap and its cause, written by hand after each private run.",
+        (gaps_markdown.rstrip("\n") if gaps_markdown is not None else GAPS_POINTER),
         "",
     ]
     return "\n".join(lines)

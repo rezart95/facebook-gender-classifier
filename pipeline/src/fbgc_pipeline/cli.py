@@ -36,6 +36,10 @@ def main() -> None:
     """Extraction pipeline for facebook-gender-classifier. Runs only on the private zone."""
 
 
+def repo_root() -> Path:
+    return find_repo_root(Path(__file__))
+
+
 def private_zone() -> PrivateZone:
     zone = PrivateZone.from_env()
     zone.check(find_repo_root(Path.cwd()))
@@ -82,7 +86,9 @@ def golden(
     ours = pd.read_parquet(features)
     comparisons = compare_columns(ours, load_legacy_features(legacy_features), default_catalogue())
     agreement = gender_agreement(ours, load_legacy_gender(legacy_info))
-    text = render_golden_report(comparisons, features.stem, agreement)
+    gaps_path = repo_root() / "docs" / "extraction-golden-gaps.md"
+    gaps = gaps_path.read_text(encoding="utf-8") if gaps_path.is_file() else None
+    text = render_golden_report(comparisons, features.stem, agreement, gaps)
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(text, encoding="utf-8", newline="\n")
     typer.echo(text.split("## Worst")[0])
