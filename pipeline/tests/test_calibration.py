@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import typer
 
-from fbgc_pipeline.cli import MIN_PROFILES, ensure_enough_profiles
+from fbgc_pipeline.cli.validation import MIN_PROFILES, ensure_enough_profiles
 from fbgc_pipeline.features.faithful.dictionary import WORD_VARIANTS, load_word_entries
 from fbgc_pipeline.validate.dictionary_calibration import (
     WordChoice,

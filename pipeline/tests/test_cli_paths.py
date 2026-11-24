@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from fbgc_pipeline.cli import app, repo_root, report_path
+from fbgc_pipeline.cli import app
+from fbgc_pipeline.cli.common import repo_root, report_path
 from fbgc_pipeline.synthetic.fake_export import write_fake_export
 from fbgc_pipeline.synthetic.samples import sample_profile
 
