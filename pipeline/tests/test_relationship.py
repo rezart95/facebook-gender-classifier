@@ -61,6 +61,32 @@ def test_a_partner_name_never_changes_the_category(label: str, expected: str) ->
     assert relationship_category(label) == expected
 
 
+@pytest.mark.parametrize(
+    ("label", "expected"),
+    [
+        ("Engaged to Alex Widowski", "engaged"),
+        ("Engaged to Sam Married", "engaged"),
+        ("Married to Sam Single", "married"),
+        ("Vedova/o di Mario Sposato", "other"),
+        ("Sposata/o\nMarco Vedovati", "married"),
+        ("Impegnata/o, Marco Sposato", "in_relationship"),
+        ("In una relazione", "in_relationship"),
+        ("In una relazione aperta", "other"),
+        ("In una relazione complicata", "other"),
+        ("In una relazione aperta con Mario Sposato", "other"),
+        ("In una coppia di fatto con Mario Rossi", "in_relationship"),
+        ("In una coppia di fatto, Mario Vedovati", "in_relationship"),
+    ],
+)
+def test_the_leading_keyword_decides(label: str, expected: str) -> None:
+    assert relationship_category(label) == expected
+
+
+def test_suppress_rare_needs_a_positive_k() -> None:
+    with pytest.raises(ValueError, match="k must be at least 1"):
+        suppress_rare(["single"], k=0)
+
+
 def test_categories_never_carry_the_label_text() -> None:
     category = relationship_category("Impegnata/o con Marco Verdi")
     assert category in RELATIONSHIPS

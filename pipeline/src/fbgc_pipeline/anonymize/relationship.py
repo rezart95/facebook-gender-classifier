@@ -21,40 +21,52 @@ RELATIONSHIPS: tuple[Relationship, ...] = (
     "other",
     "unknown",
 )
-# First matching rule wins; "other" goes first so "open"/"complicated" never read as a couple.
+# The keyword that starts earliest in the label decides; at the same start the longest keyword
+# wins, so full phrases ("in una relazione aperta") beat their prefix ("in una relazione").
 RULES: tuple[tuple[Relationship, tuple[str, ...]], ...] = (
     (
         "other",
-        ("relazione aperta", "open relationship", "complicat", "vedov", "widow")
+        ("in una relazione aperta", "in una relazione complicata", "in an open relationship")
+        + ("relazione aperta", "open relationship", "complicat", "vedov", "widow")
         + ("separat", "divorzi", "divorced"),
     ),
     ("married", ("sposat", "married", "unione civile", "civil union")),
     ("engaged", ("fidanzat", "findanzat", "engaged")),
     (
         "in_relationship",
-        ("impegnat", "in a relationship", "coppia di fatto", "domestic partnership")
-        + ("convivent",),
+        ("impegnat", "in a relationship", "in una relazione", "in una coppia di fatto")
+        + ("coppia di fatto", "domestic partnership", "convivent"),
     ),
     ("single", ("single",)),
 )
-# A partner's name follows "con"/"with"; only the keyword before it counts, so a surname such as
-# "Sposato" or "Vedovati" can never change the category.
-PARTNER_SUFFIX = re.compile(r"\s+(?:con|with)\b.*$", re.DOTALL)
+KEYWORDS: tuple[tuple[str, Relationship], ...] = tuple(
+    (keyword, category) for category, keywords in RULES for keyword in keywords
+)
+# Cheap first step: drop what follows "con"/"with"/"to" (a partner's name). The earliest-keyword
+# rule below is what guarantees names cannot steer the category ("di", commas, line breaks).
+PARTNER_SUFFIX = re.compile(r"\s+(?:con|with|to)\b.*$", re.DOTALL)
 
 
 def relationship_category(label: str | None) -> Relationship:
-    """The category of a relationship label; unknown when missing, other when unrecognised."""
+    """The category of a relationship label; unknown when missing, other when unrecognised.
+
+    The leading keyword decides: names or dates after it cannot change the category.
+    """
     if label is None or not label.strip():
         return "unknown"
     text = PARTNER_SUFFIX.sub("", label.lower())
-    for category, keywords in RULES:
-        if any(keyword in text for keyword in keywords):
-            return category
-    return "other"
+    hits: list[tuple[int, int, Relationship]] = [
+        (text.index(keyword), -len(keyword), category)
+        for keyword, category in KEYWORDS
+        if keyword in text
+    ]
+    return min(hits)[2] if hits else "other"
 
 
 def suppress_rare(categories: Sequence[str], k: int) -> list[str]:
     """Categories with fewer than k people become 'other'; an 'other' below k joins 'unknown'."""
+    if k < 1:
+        raise ValueError("k must be at least 1")
     counts = Counter(categories)
     merged = [
         category if category in ("other", "unknown") or counts[category] >= k else "other"
