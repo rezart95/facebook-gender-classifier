@@ -2,7 +2,7 @@ import math
 from datetime import UTC, datetime
 
 from fbgc_pipeline.features.faithful.gini import gini_heterogeneity
-from fbgc_pipeline.features.faithful.message_stats import message_summary, r_summary, signif
+from fbgc_pipeline.features.faithful.message_stats import message_summary, r_summary
 from fbgc_pipeline.features.faithful.rhythms import (
     WeekdayLabels,
     days_active,
@@ -41,18 +41,15 @@ def test_message_summary_matches_r() -> None:
 def test_empty_messages_give_nan_shares() -> None:
     summary = message_summary([])
     assert summary["msg_count"] == 0
+    assert summary["msg_chars_total"] == 0
+    assert summary["msg_n_contacts"] == 0
+    assert math.isnan(summary["msg_top1_share"])
     assert math.isnan(summary["msg_per_contact"])
     assert math.isnan(summary["msg_chars_mean"])
 
 
-def test_r_summary_rounds_to_four_significant_digits() -> None:
-    assert r_summary([1, 2, 2])[3] == 1.667
-
-
-def test_signif() -> None:
-    assert signif(123456) == 123500
-    assert signif(0.000123456) == 0.0001235
-    assert signif(0.0) == 0.0
+def test_r_summary_is_not_rounded() -> None:
+    assert r_summary([1, 2, 2])[3] == 5 / 3
 
 
 def test_gini_heterogeneity() -> None:
@@ -73,13 +70,18 @@ def test_hour_shares_ignore_unknown_times() -> None:
 
 
 def test_weekday_shares_correct_and_r_sunday_first() -> None:
-    times = [moment(2, 9), moment(8, 23)]  # a Monday and a Sunday
+    times = [moment(2, 9), moment(8, 23), moment(7, 12), moment(2, 18)]  # Mon, Sun, Sat, Mon
     correct = weekday_shares(times, "msg", WeekdayLabels.CORRECT)
-    assert (correct["msg_weekday_mon"], correct["msg_weekday_sun"]) == (0.5, 0.5)
+    assert (correct["msg_weekday_mon"], correct["msg_weekday_sat"], correct["msg_weekday_sun"]) == (
+        0.5,
+        0.25,
+        0.25,
+    )
     shifted = weekday_shares(times, "msg", WeekdayLabels.R_SUNDAY_FIRST)
-    assert shifted["msg_weekday_mon"] == 0.5  # Sunday's share under R's Monday label
+    assert shifted["msg_weekday_mon"] == 0.25  # Sunday's share under R's Monday label
     assert shifted["msg_weekday_tue"] == 0.5  # Monday's share
-    assert shifted["msg_weekday_sun"] == 0.0
+    assert shifted["msg_weekday_sun"] == 0.25  # Saturday's share wraps onto Sunday
+    assert shifted["msg_weekday_sat"] == 0.0
 
 
 def test_no_times_give_nan_and_days_active_counts_dates() -> None:
