@@ -22,3 +22,16 @@ outside the repo, and this repository holds code, invented test profiles and agg
 ## Licence
 
 GPL-3.0-or-later.
+
+## Running the extraction (owner's machine only)
+
+```bash
+export FBGC_RAW_DIR=/path/outside/the/repo/with/wave1-and-wave2
+export FBGC_PRIVATE_DIR=/another/path/outside/the/repo
+uv run fbgc inventory
+uv run fbgc extract
+```
+
+Outputs keyed by real folder codes stay in `FBGC_PRIVATE_DIR`. Only aggregate reports
+(`docs/extraction-*.md`) are committed. See `docs/extraction-golden-report.md` for how the
+faithful features compare with the 2019 table.

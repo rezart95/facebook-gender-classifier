@@ -60,7 +60,7 @@ def inventory() -> None:
 
 @app.command()
 def extract(
-    window: WindowPolicy = WindowPolicy.LAST_6_MONTHS,
+    window: WindowPolicy = WindowPolicy.LAST_12_MONTHS,
     weekday_labels: WeekdayLabels = WeekdayLabels.CORRECT,
     workers: int = 4,
 ) -> None:
@@ -91,7 +91,7 @@ def golden(
 @app.command("calibrate-dictionary")
 def calibrate_dictionary(
     legacy_features: Path,
-    window: WindowPolicy = WindowPolicy.LAST_6_MONTHS,
+    window: WindowPolicy = WindowPolicy.LAST_12_MONTHS,
     workers: int = 4,
     report: Path = Path("docs/extraction-dictionary-calibration.md"),
 ) -> None:

@@ -2,82 +2,240 @@
 # published, so each `phrase` is rebuilt from the column name. `variant` (substring | word |
 # substring_ci | word_ci) is chosen by `fbgc calibrate-dictionary` against the 2019 table.
 words:
-  - {term: "bello", phrase: "bello", variant: substring}
-  - {term: "sicuro", phrase: "sicuro", variant: substring}
-  - {term: "NonLoSo", phrase: "non lo so", variant: substring}
-  - {term: "boh", phrase: "boh", variant: substring}
-  - {term: "bho", phrase: "bho", variant: substring}
-  - {term: "aiuto", phrase: "aiuto", variant: substring}
-  - {term: "agitat", phrase: "agitat", variant: substring}
-  - {term: "ansia", phrase: "ansia", variant: substring}
-  - {term: "ragione", phrase: "ragione", variant: substring}
-  - {term: "giusto", phrase: "giusto", variant: substring}
-  - {term: "scusa", phrase: "scusa", variant: substring}
-  - {term: "dispiace", phrase: "dispiace", variant: substring}
-  - {term: "ascolto", phrase: "ascolto", variant: substring}
-  - {term: "capisco", phrase: "capisco", variant: substring}
-  - {term: "disturbo", phrase: "disturbo", variant: substring}
-  - {term: "dimmi", phrase: "dimmi", variant: substring}
-  - {term: "bene", phrase: "bene", variant: substring}
-  - {term: "male", phrase: "male", variant: substring}
-  - {term: "ok", phrase: "ok", variant: substring}
-  - {term: "mai", phrase: "mai", variant: substring}
-  - {term: "sempre", phrase: "sempre", variant: substring}
-  - {term: "impossibile", phrase: "impossibile", variant: substring}
-  - {term: "io", phrase: "io", variant: substring}
-  - {term: "lui", phrase: "lui", variant: substring}
-  - {term: "lei", phrase: "lei", variant: substring}
-  - {term: "loro", phrase: "loro", variant: substring}
-  - {term: "voi", phrase: "voi", variant: substring}
-  - {term: "nervoso", phrase: "nervoso", variant: substring}
-  - {term: "triste", phrase: "triste", variant: substring}
-  - {term: "interessa", phrase: "interessa", variant: substring}
-  - {term: "secondoMe", phrase: "secondo me", variant: substring}
-  - {term: "secondoTe", phrase: "secondo te", variant: substring}
-  - {term: "vicino", phrase: "vicino", variant: substring}
-  - {term: "umore", phrase: "umore", variant: substring}
-  - {term: "nonRiesco", phrase: "non riesco", variant: substring}
-  - {term: "riesco", phrase: "riesco", variant: substring}
-  - {term: "giuMorale", phrase: "giù di morale", variant: substring}
-  - {term: "impazzi", phrase: "impazzi", variant: substring}
-  - {term: "angoscia", phrase: "angoscia", variant: substring}
-  - {term: "oppresso", phrase: "oppresso", variant: substring}
-  - {term: "preoccupato", phrase: "preoccupato", variant: substring}
-  - {term: "sensibile", phrase: "sensibile", variant: substring}
-  - {term: "incubo", phrase: "incubo", variant: substring}
-  - {term: "aspettare", phrase: "aspettare", variant: substring}
-  - {term: "pensare", phrase: "pensare", variant: substring}
-  - {term: "infastidire", phrase: "infastidire", variant: substring}
-  - {term: "scocciare", phrase: "scocciare", variant: substring}
-  - {term: "esasperato", phrase: "esasperato", variant: substring}
-  - {term: "pezzi", phrase: "pezzi", variant: substring}
-  - {term: "stufo", phrase: "stufo", variant: substring}
-  - {term: "accorgersi", phrase: "accorgersi", variant: substring}
-  - {term: "conto", phrase: "conto", variant: substring}
-  - {term: "pazienza", phrase: "pazienza", variant: substring}
-  - {term: "consapevole", phrase: "consapevole", variant: substring}
-  - {term: "scrupoloso", phrase: "scrupoloso", variant: substring}
-  - {term: "sensato", phrase: "sensato", variant: substring}
-  - {term: "responsabile", phrase: "responsabile", variant: substring}
-  - {term: "inconsciente", phrase: "inconsciente", variant: substring}
-  - {term: "chePalle", phrase: "che palle", variant: substring}
-  - {term: "importa", phrase: "importa", variant: substring}
-  - {term: "NonMImporta", phrase: "non m'importa", variant: substring}
-  - {term: "nonImporta", phrase: "non importa", variant: substring}
-  - {term: "frustrante", phrase: "frustrante", variant: substring}
-  - {term: "merito", phrase: "merito", variant: substring}
-  - {term: "colpa", phrase: "colpa", variant: substring}
-  - {term: "disperato", phrase: "disperato", variant: substring}
-  - {term: "sopportare", phrase: "sopportare", variant: substring}
-  - {term: "conseguenza", phrase: "conseguenza", variant: substring}
-  - {term: "causa", phrase: "causa", variant: substring}
-  - {term: "perdono", phrase: "perdono", variant: substring}
-  - {term: "sento", phrase: "sento", variant: substring}
-  - {term: "comeSento", phrase: "come mi sento", variant: substring}
-  - {term: "senti", phrase: "senti", variant: substring}
-  - {term: "comeSenti", phrase: "come ti senti", variant: substring}
-  - {term: "si", phrase: "si", variant: substring}
-  - {term: "no", phrase: "no", variant: substring}
-  - {term: "niente", phrase: "niente", variant: substring}
-  - {term: "assolutamente", phrase: "assolutamente", variant: substring}
-  - {term: "tu", phrase: "tu", variant: substring}
+- term: bello
+  phrase: bello
+  variant: word_ci
+- term: sicuro
+  phrase: sicuro
+  variant: substring
+- term: NonLoSo
+  phrase: non lo so
+  variant: word
+- term: boh
+  phrase: boh
+  variant: substring
+- term: bho
+  phrase: bho
+  variant: substring
+- term: aiuto
+  phrase: aiuto
+  variant: substring
+- term: agitat
+  phrase: agitat
+  variant: substring
+- term: ansia
+  phrase: ansia
+  variant: substring
+- term: ragione
+  phrase: ragione
+  variant: word
+- term: giusto
+  phrase: giusto
+  variant: substring
+- term: scusa
+  phrase: scusa
+  variant: substring
+- term: dispiace
+  phrase: dispiace
+  variant: substring
+- term: ascolto
+  phrase: ascolto
+  variant: word
+- term: capisco
+  phrase: capisco
+  variant: word
+- term: disturbo
+  phrase: disturbo
+  variant: substring
+- term: dimmi
+  phrase: dimmi
+  variant: substring
+- term: bene
+  phrase: bene
+  variant: substring
+- term: male
+  phrase: male
+  variant: substring
+- term: ok
+  phrase: ok
+  variant: substring
+- term: mai
+  phrase: mai
+  variant: substring
+- term: sempre
+  phrase: sempre
+  variant: substring
+- term: impossibile
+  phrase: impossibile
+  variant: substring
+- term: io
+  phrase: io
+  variant: substring
+- term: lui
+  phrase: lui
+  variant: substring
+- term: lei
+  phrase: lei
+  variant: substring
+- term: loro
+  phrase: loro
+  variant: substring
+- term: voi
+  phrase: voi
+  variant: substring
+- term: nervoso
+  phrase: nervoso
+  variant: substring
+- term: triste
+  phrase: triste
+  variant: substring
+- term: interessa
+  phrase: interessa
+  variant: word
+- term: secondoMe
+  phrase: secondo me
+  variant: substring
+- term: secondoTe
+  phrase: secondo te
+  variant: substring
+- term: vicino
+  phrase: vicino
+  variant: word
+- term: umore
+  phrase: umore
+  variant: word
+- term: nonRiesco
+  phrase: non riesco
+  variant: word
+- term: riesco
+  phrase: riesco
+  variant: word
+- term: giuMorale
+  phrase: giù di morale
+  variant: substring
+- term: impazzi
+  phrase: impazzi
+  variant: substring
+- term: angoscia
+  phrase: angoscia
+  variant: substring
+- term: oppresso
+  phrase: oppresso
+  variant: substring
+- term: preoccupato
+  phrase: preoccupato
+  variant: substring
+- term: sensibile
+  phrase: sensibile
+  variant: substring
+- term: incubo
+  phrase: incubo
+  variant: substring
+- term: aspettare
+  phrase: aspettare
+  variant: substring
+- term: pensare
+  phrase: pensare
+  variant: word
+- term: infastidire
+  phrase: infastidire
+  variant: substring
+- term: scocciare
+  phrase: scocciare
+  variant: substring
+- term: esasperato
+  phrase: esasperato
+  variant: substring
+- term: pezzi
+  phrase: pezzi
+  variant: word
+- term: stufo
+  phrase: stufo
+  variant: substring
+- term: accorgersi
+  phrase: accorgersi
+  variant: substring
+- term: conto
+  phrase: conto
+  variant: word
+- term: pazienza
+  phrase: pazienza
+  variant: substring
+- term: consapevole
+  phrase: consapevole
+  variant: substring
+- term: scrupoloso
+  phrase: scrupoloso
+  variant: substring
+- term: sensato
+  phrase: sensato
+  variant: substring
+- term: responsabile
+  phrase: responsabile
+  variant: substring
+- term: inconsciente
+  phrase: inconsciente
+  variant: substring
+- term: chePalle
+  phrase: che palle
+  variant: substring
+- term: importa
+  phrase: importa
+  variant: substring
+- term: NonMImporta
+  phrase: non m'importa
+  variant: word
+- term: nonImporta
+  phrase: non importa
+  variant: substring
+- term: frustrante
+  phrase: frustrante
+  variant: substring
+- term: merito
+  phrase: merito
+  variant: substring
+- term: colpa
+  phrase: colpa
+  variant: substring
+- term: disperato
+  phrase: disperato
+  variant: substring
+- term: sopportare
+  phrase: sopportare
+  variant: substring
+- term: conseguenza
+  phrase: conseguenza
+  variant: substring
+- term: causa
+  phrase: causa
+  variant: substring
+- term: perdono
+  phrase: perdono
+  variant: substring
+- term: sento
+  phrase: sento
+  variant: word
+- term: comeSento
+  phrase: come mi sento
+  variant: substring
+- term: senti
+  phrase: senti
+  variant: word
+- term: comeSenti
+  phrase: come ti senti
+  variant: substring
+- term: si
+  phrase: si
+  variant: substring
+- term: 'no'
+  phrase: 'no'
+  variant: substring
+- term: niente
+  phrase: niente
+  variant: substring
+- term: assolutamente
+  phrase: assolutamente
+  variant: substring
+- term: tu
+  phrase: tu
+  variant: word

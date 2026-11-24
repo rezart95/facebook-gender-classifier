@@ -51,16 +51,20 @@ def test_broken_export_becomes_a_failed_row(tmp_path: Path) -> None:
     assert result.reason
 
 
+def test_default_options_match_the_2019_data() -> None:
+    assert FaithfulOptions().label == "12m_correct"
+
+
 def test_run_extraction_writes_private_outputs(tmp_path: Path) -> None:
     raw = tmp_path / "raw"
     write_fake_export(raw / "wave1" / "alpha.zip", sample_profile())
     write_fake_export(raw / "wave2" / "beta", sample_profile(style="en_uk", gender_label="Male"))
     summary = run_extraction(raw, tmp_path / "out", FaithfulOptions(), workers=1)
     assert summary["by_status"] == {"ok": 2}
-    frame = pd.read_parquet(tmp_path / "out" / "faithful_6m_correct.parquet")
+    frame = pd.read_parquet(tmp_path / "out" / "faithful_12m_correct.parquet")
     assert list(frame.columns[:5]) == ["wave", "folder_code", "status", "language", "gender"]
     assert frame.shape == (2, 5 + 539)
-    assert (tmp_path / "out" / "faithful_6m_correct_report.json").is_file()
+    assert (tmp_path / "out" / "faithful_12m_correct_report.json").is_file()
 
 
 def test_cli_extract(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

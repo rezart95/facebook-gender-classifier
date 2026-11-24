@@ -1,4 +1,8 @@
-"""Options of the faithful extraction. The golden test decides the defaults (Task 20)."""
+"""Options of the faithful extraction.
+
+The defaults reproduce the 2019 data (12-month window, correct weekday labels), as chosen by
+the golden check.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +14,7 @@ from fbgc_pipeline.window.observation import WindowPolicy
 
 @dataclass(frozen=True)
 class FaithfulOptions:
-    window: WindowPolicy = WindowPolicy.LAST_6_MONTHS
+    window: WindowPolicy = WindowPolicy.LAST_12_MONTHS
     weekday_labels: WeekdayLabels = WeekdayLabels.CORRECT
 
     @property
