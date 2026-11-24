@@ -14,7 +14,7 @@ from fbgc_pipeline.locate.profile_finder import ProfileLocation, list_profiles
 from fbgc_pipeline.parse.index_page import parse_index_page
 from fbgc_pipeline.parse.messages_page import parse_messages_page
 from fbgc_pipeline.validate.dictionary_calibration import CountKey, profile_word_counts
-from fbgc_pipeline.window.observation import WindowPolicy, window_bounds
+from fbgc_pipeline.window.observation import WindowPolicy, is_windowed, window_bounds
 
 
 def collect_word_counts(
@@ -48,6 +48,8 @@ def profile_counts(
         info = parse_index_page(location.root / "index.htm")
         messages = location.root / "html" / "messages.htm"
         if info.language == "other" or not messages.is_file():
+            return location.folder_code, None
+        if info.downloaded_at is None and is_windowed(window):
             return location.folder_code, None
         bounds = window_bounds(info.downloaded_at, window)
         threads, owner = windowed_threads_and_owner(parse_messages_page(messages), bounds)

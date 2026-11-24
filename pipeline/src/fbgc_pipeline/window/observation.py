@@ -32,6 +32,10 @@ def subtract_months(moment: datetime, months: int) -> datetime:
     return moment.replace(year=year, month=month_index + 1, day=day)
 
 
+def is_windowed(policy: WindowPolicy) -> bool:
+    return policy in POLICY_MONTHS
+
+
 def window_bounds(downloaded_at: datetime | None, policy: WindowPolicy) -> Bounds:
     months = POLICY_MONTHS.get(policy)
     if months is None or downloaded_at is None:

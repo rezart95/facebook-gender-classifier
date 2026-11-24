@@ -10,7 +10,7 @@ from fbgc_pipeline.features.faithful.assemble import faithful_features
 from fbgc_pipeline.locate.profile_finder import ProfileLocation
 from fbgc_pipeline.parse.export_pages import ExportPages
 from fbgc_pipeline.parse.index_page import parse_index_page
-from fbgc_pipeline.window.observation import window_bounds
+from fbgc_pipeline.window.observation import is_windowed, window_bounds
 
 Status = Literal["ok", "excluded", "failed"]
 
@@ -34,6 +34,10 @@ def extract_profile(location: ProfileLocation, options: FaithfulOptions) -> Prof
         if info.language == "other":
             return ProfileResult(
                 wave, code, "excluded", info.language, info.gender, "unsupported UI language"
+            )
+        if info.downloaded_at is None and is_windowed(options.window):
+            return ProfileResult(
+                wave, code, "excluded", info.language, info.gender, "no download date"
             )
         bounds = window_bounds(info.downloaded_at, options.window)
         features = faithful_features(
