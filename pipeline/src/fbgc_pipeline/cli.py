@@ -13,9 +13,16 @@ from fbgc_core.catalogue import default_catalogue
 from fbgc_core.settings import PrivateZone, find_repo_root
 from fbgc_pipeline.extract.options import FaithfulOptions
 from fbgc_pipeline.extract.run import run_extraction
+from fbgc_pipeline.features.faithful.dictionary import load_word_entries
 from fbgc_pipeline.features.faithful.rhythms import WeekdayLabels
 from fbgc_pipeline.locate.inventory import inventory_row, summarise_inventory
 from fbgc_pipeline.locate.profile_finder import list_profiles
+from fbgc_pipeline.validate.calibration_run import collect_word_counts
+from fbgc_pipeline.validate.dictionary_calibration import (
+    choose_variants,
+    render_calibration_report,
+    write_word_entries,
+)
 from fbgc_pipeline.validate.golden_compare import compare_columns, gender_agreement
 from fbgc_pipeline.validate.golden_report import render_golden_report
 from fbgc_pipeline.validate.legacy_table import load_legacy_features, load_legacy_gender
@@ -79,3 +86,23 @@ def golden(
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(text, encoding="utf-8", newline="\n")
     typer.echo(text.split("## Worst")[0])
+
+
+@app.command("calibrate-dictionary")
+def calibrate_dictionary(
+    legacy_features: Path,
+    window: WindowPolicy = WindowPolicy.LAST_6_MONTHS,
+    workers: int = 4,
+    report: Path = Path("docs/extraction-dictionary-calibration.md"),
+) -> None:
+    """Pick, per rebuilt word, the regex variant that best reproduces the 2019 counts."""
+    zone = private_zone()
+    legacy = load_legacy_features(legacy_features)
+    entries = load_word_entries()
+    per_profile = collect_word_counts(zone.raw_dir, set(legacy.index), entries, window, workers)
+    choices = choose_variants(per_profile, legacy, entries)
+    write_word_entries(choices)
+    report.parent.mkdir(parents=True, exist_ok=True)
+    text = render_calibration_report(choices, len(per_profile))
+    report.write_text(text, encoding="utf-8", newline="\n")
+    typer.echo(f"calibrated {len(choices)} words on {len(per_profile)} profiles")
