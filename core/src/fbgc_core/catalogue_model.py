@@ -8,8 +8,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-Origin = Literal["2019", "fixed", "new"]
+Origin = Literal["2019", "fixed", "new", "survey"]
 KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+# Units whose values are whole counts (synthetic data rounds them). Means and shares are not.
+COUNT_UNITS = frozenset(
+    {"people", "messages", "characters", "days", "items", "requests", "events", "matches"}
+)
 
 
 class FeatureSpec(BaseModel):
@@ -30,6 +34,10 @@ class FeatureSpec(BaseModel):
         if not KEY_PATTERN.match(value):
             raise ValueError(f"feature key must be snake_case: {value!r}")
         return value
+
+    @property
+    def is_count(self) -> bool:
+        return self.unit in COUNT_UNITS
 
 
 class Catalogue(BaseModel):
