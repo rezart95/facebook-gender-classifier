@@ -30,6 +30,8 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["*.md", "r-reference"]
+force-exclude = true
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "N"]
@@ -41,12 +43,12 @@ known-first-party = ["fbgc_core", "fbgc_pipeline"]
 extend-immutable-calls = ["pathlib.Path", "typer.Option", "typer.Argument"]
 
 [tool.pytest.ini_options]
-testpaths = ["core/tests", "pipeline/tests"]
+testpaths = ["core/tests", "pipeline/tests", "tools/tests"]
 markers = ["private: needs the private data zone; never runs in CI"]
 addopts = "-m 'not private' --import-mode=importlib"
 
 [tool.pyright]
 pythonVersion = "3.12"
-include = ["core/src", "pipeline/src"]
+include = ["core/src", "pipeline/src", "tools"]
 typeCheckingMode = "standard"
 reportMissingTypeStubs = false

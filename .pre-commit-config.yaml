@@ -11,3 +11,10 @@ repos:
         entry: uv run ruff format
         language: system
         types: [python]
+      - id: leak-guard
+        name: data-leak guard
+        entry: uv run python tools/leak_guard.py
+        language: system
+        pass_filenames: true
+        verbose: true        # show the "exact-code check is off" warning even when the hook passes
+        require_serial: true # one guard run per commit, so the warning prints once
