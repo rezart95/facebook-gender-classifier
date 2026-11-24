@@ -1,0 +1,6 @@
+# Tokens that match the participant-code shape but are harmless. One per line.
+ISO8601
+SHA256
+CP1252
+UTF16
+ABC1234
