@@ -1,16 +1,19 @@
-"""Paths to the private zone, read from FBGC_* environment variables.
+"""Paths to the private zone and the ID secret, read from FBGC_* environment variables.
 
 The private zone holds the raw exports and anything keyed by real folder codes.
-It must never sit inside the repository.
+It must never sit inside the repository. The ID secret (FBGC_ID_SECRET) keys the
+pseudonymous IDs; it is never written anywhere.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 WORKSPACE_MARKER = "[tool.uv.workspace]"
+MIN_SECRET_LENGTH = 32
 
 
 class PrivateZoneError(ValueError):
@@ -35,6 +38,7 @@ class PrivateZone(BaseSettings):
 
     raw_dir: Path
     private_dir: Path
+    id_secret: SecretStr | None = None
 
     @classmethod
     def from_env(cls) -> PrivateZone:
@@ -46,3 +50,13 @@ class PrivateZone(BaseSettings):
         for name, path in (("FBGC_RAW_DIR", self.raw_dir), ("FBGC_PRIVATE_DIR", self.private_dir)):
             if is_inside(path, repo_root):
                 raise PrivateZoneError(f"{name} must be outside the repository: {path}")
+
+    def require_id_secret(self) -> str:
+        if self.id_secret is None:
+            raise PrivateZoneError("FBGC_ID_SECRET is not set")
+        secret = self.id_secret.get_secret_value()
+        if len(secret) < MIN_SECRET_LENGTH:
+            raise PrivateZoneError(
+                f"FBGC_ID_SECRET must have at least {MIN_SECRET_LENGTH} characters"
+            )
+        return secret

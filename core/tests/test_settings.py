@@ -59,3 +59,23 @@ def test_missing_raw_dir_is_rejected(tmp_path: Path, monkeypatch) -> None:
     zone = zone_from_env(monkeypatch, tmp_path / "nope", tmp_path / "private")
     with pytest.raises(PrivateZoneError, match="does not exist"):
         zone.check(repo)
+
+
+def test_id_secret_is_required_and_long(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("FBGC_ID_SECRET", raising=False)
+    zone = zone_from_env(monkeypatch, tmp_path, tmp_path / "private")
+    with pytest.raises(PrivateZoneError, match="FBGC_ID_SECRET is not set"):
+        zone.require_id_secret()
+    monkeypatch.setenv("FBGC_ID_SECRET", "too-short")
+    zone = zone_from_env(monkeypatch, tmp_path, tmp_path / "private")
+    with pytest.raises(PrivateZoneError, match="at least 32 characters"):
+        zone.require_id_secret()
+
+
+def test_id_secret_is_returned_but_never_shown(tmp_path: Path, monkeypatch) -> None:
+    secret = "s" * 40
+    monkeypatch.setenv("FBGC_ID_SECRET", secret)
+    zone = zone_from_env(monkeypatch, tmp_path, tmp_path / "private")
+    assert zone.require_id_secret() == secret
+    assert secret not in repr(zone)
+    assert secret not in str(zone.model_dump())
