@@ -1,12 +1,15 @@
 """Fit a Gaussian-copula model of the anonymized data from aggregate statistics only.
 
-Kept per feature: the 1%-99% quantiles (stored on a 101-point grid) and the missing rate.
+Kept per feature: the quantiles (stored on a 101-point grid) and the missing rate. A feature
+with fewer than MIN_OBSERVED values is left out. The quantile tails are clipped at 1%-99%, or
+further in (K_MIN / n) for features with few values, so they sit at or inside the 5th smallest
+and 5th largest value, matching the k of the anonymization.
 Kept jointly: the Spearman matrix of the features plus gender (F = 1), turned into Pearson
 correlations with 2 sin(pi rho / 6) and projected to the nearest positive semi-definite
 matrix (optionally shrunk toward the identity). Category shares of wave, age band and
-relationship are kept too. The model holds aggregates only, and its marginals are clipped to
-the 1%-99% quantiles: the exact real minimum and maximum of a feature are never stored (nor,
-through sampling, produced). No row of the data is kept.
+relationship are kept too. The model holds aggregates only: the exact real minimum and
+maximum of a feature are never stored (nor, through sampling, produced). No row of the data
+is kept.
 """
 
 from __future__ import annotations
@@ -17,9 +20,11 @@ import numpy as np
 import pandas as pd
 
 from fbgc_core.catalogue_model import Catalogue, FeatureSpec
+from fbgc_pipeline.anonymize.k_anonymity import K_MIN
 
 LEVELS = np.linspace(0.0, 1.0, 101)
-CLIP = (0.01, 0.99)  # marginals stop here: the real min and max are the most identifying values
+MIN_OBSERVED = 20  # a feature seen in fewer people is left out of the model
+MIN_TAIL = 0.01  # marginals never reach beyond the 1% and 99% quantiles
 UNKNOWN = "unknown"
 CATEGORY_COLUMNS = ("wave", "age_band", "relationship")
 GENDER_COLUMN = "__gender__"
@@ -38,6 +43,7 @@ class SyntheticModel:
     female_share: float
     categories: dict[str, Shares]
     n_rows: int
+    dropped_sparse: int = 0  # features left out for having fewer than MIN_OBSERVED values
 
 
 def spearman_to_pearson(rho: np.ndarray) -> np.ndarray:
@@ -65,8 +71,12 @@ def missing_block(spec: FeatureSpec) -> str:
 
 
 def marginal_quantiles(values: pd.Series) -> np.ndarray:
+    """Quantiles on the grid, with tails pulled in to at least K_MIN values from each end."""
     observed = values.dropna().to_numpy(dtype=float)
-    return np.quantile(observed, np.clip(LEVELS, *CLIP)) if observed.size else np.zeros(LEVELS.size)
+    if not observed.size:
+        return np.zeros(LEVELS.size)
+    lower = max(MIN_TAIL, K_MIN / observed.size)
+    return np.quantile(observed, np.clip(LEVELS, lower, 1 - lower))
 
 
 def category_shares(values: pd.Series) -> Shares:
@@ -83,11 +93,14 @@ def fit_synthetic_model(
     shrinkage: float = 0.0,
 ) -> SyntheticModel:
     """`features` has one row per participant (same order) and one column per feature key."""
+    dense = [column for column in features.columns if features[column].count() >= MIN_OBSERVED]
+    dropped_sparse = len(features.columns) - len(dense)
+    features = features[dense]
     keys = tuple(str(column) for column in features.columns)
     specs = [catalogue.get(key) for key in keys]
     gender = (participants["gender"].astype(str) == "F").astype(float).to_numpy()
     ranks = features.assign(**{GENDER_COLUMN: gender}).rank()
-    spearman = np.nan_to_num(ranks.corr().to_numpy(dtype=float), nan=0.0)
+    spearman = np.nan_to_num(ranks.corr(min_periods=MIN_OBSERVED).to_numpy(dtype=float), nan=0.0)
     np.fill_diagonal(spearman, 1.0)
     return SyntheticModel(
         keys=keys,
@@ -99,4 +112,5 @@ def fit_synthetic_model(
         female_share=float(gender.mean()),
         categories={column: category_shares(participants[column]) for column in CATEGORY_COLUMNS},
         n_rows=len(participants),
+        dropped_sparse=dropped_sparse,
     )

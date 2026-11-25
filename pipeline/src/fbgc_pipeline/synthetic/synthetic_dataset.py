@@ -36,6 +36,7 @@ class SyntheticDataset:
     participants: pd.DataFrame
     features: pd.DataFrame
     check: DistanceCheck
+    dropped_sparse: int = 0
 
 
 def read_anonymized(folder: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -66,14 +67,15 @@ def build_synthetic(
     model = fit_synthetic_model(participants, real, catalogue, shrinkage)
     people, synthetic = sample_synthetic(model, seed)
     check = distance_to_closest_record(
-        numeric_rows(participants, real), numeric_rows(people, synthetic.drop(columns="pid"))
+        numeric_rows(participants, real[list(model.keys)]),
+        numeric_rows(people, synthetic.drop(columns="pid")),
     )
     if not check.passed:
         raise SyntheticPrivacyError(
             "synthetic rows sit too close to real rows: 5th percentile "
             f"{check.synthetic_p5:.3f} < {check.real_p5:.3f}"
         )
-    return SyntheticDataset(people, synthetic, check)
+    return SyntheticDataset(people, synthetic, check, model.dropped_sparse)
 
 
 def write_synthetic(

@@ -39,6 +39,7 @@ def synth_data(
     summary = {
         "rows": len(dataset.participants),
         "features": dataset.features.shape[1] - 1,
+        "features_dropped_sparse": dataset.dropped_sparse,
         "shrinkage": shrinkage,
         "distance_p5_synthetic_to_real": round(dataset.check.synthetic_p5, 4),
         "distance_p5_real_to_real": round(dataset.check.real_p5, 4),

@@ -64,8 +64,10 @@ def test_fit_keeps_aggregates_only() -> None:
     model = fit_synthetic_model(participants, features, default_catalogue())
     assert model.keys == ("msg_count", "msg_chars_mean", "msg_hour_21", "gpius_total")
     assert model.quantiles.shape == (4, 101)
-    assert model.quantiles[0, 0] == pytest.approx(features["msg_count"].quantile(0.01))
-    assert model.quantiles[0, -1] == pytest.approx(features["msg_count"].quantile(0.99))
+    tail = 5 / 200  # k-consistent clipping: 5 / n_observed beats the 1% floor at n = 200
+    assert model.quantiles[0, 0] == pytest.approx(features["msg_count"].quantile(tail))
+    assert model.quantiles[0, -1] == pytest.approx(features["msg_count"].quantile(1 - tail))
+    assert model.dropped_sparse == 0
     assert model.missing_rates[3] == pytest.approx(features["gpius_total"].isna().mean())
     assert model.counts.tolist() == [True, False, False, False]
     assert model.blocks == ("msg", "msg", "msg", "survey")
@@ -91,8 +93,8 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
     assert list(synthetic["pid"][:2]) == ["S001", "S002"]
     counts = synthetic["msg_count"]
     assert (counts == counts.round()).all()
-    assert counts.min() >= np.floor(features["msg_count"].quantile(0.01))
-    assert counts.max() <= np.ceil(features["msg_count"].quantile(0.99))
+    assert counts.min() >= np.floor(features["msg_count"].quantile(0.025))
+    assert counts.max() <= np.ceil(features["msg_count"].quantile(1 - 0.025))
     assert 0.1 < synthetic["gpius_total"].isna().mean() < 0.3
     rho = synthetic["msg_count"].corr(synthetic["msg_chars_mean"], method="spearman")
     assert rho > 0.8
@@ -103,11 +105,11 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
 
 
 def outlier_tables() -> tuple[pd.DataFrame, pd.DataFrame, float, float]:
-    """Fake data with one huge and one tiny outlier; also the real 1% and 99% quantiles."""
+    """Fake data with one huge and one tiny outlier; also the real 2.5% and 97.5% quantiles."""
     participants, features = real_tables()
     features["msg_hour_21"] = np.append(np.linspace(0, 10, 199), 1000.0)
     features.loc[0, "msg_hour_21"] = -500.0
-    low, high = (round(float(features["msg_hour_21"].quantile(q)), 4) for q in (0.01, 0.99))
+    low, high = (round(float(features["msg_hour_21"].quantile(q)), 4) for q in (0.025, 0.975))
     return participants, features, low, high
 
 

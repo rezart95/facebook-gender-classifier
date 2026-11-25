@@ -102,6 +102,7 @@ def test_cli_synth_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None
     assert result.exit_code == 0, result.output
     summary = json.loads(result.output)
     assert (summary["rows"], summary["features"], summary["shrinkage"]) == (60, 2, 0.25)
+    assert summary["features_dropped_sparse"] == 0
     people = pd.read_csv(tmp_path / "public" / "participants.csv")
     assert not people["pid"].str.startswith("P").any()
 
