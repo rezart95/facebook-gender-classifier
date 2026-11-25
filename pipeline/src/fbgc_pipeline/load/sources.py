@@ -42,6 +42,8 @@ def read_traces(demo_dir: Path) -> list[dict[str, object]]:
     traces: list[dict[str, object]] = []
     for path in sorted(demo_dir.glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
+        if data.get("fake") is not True:
+            raise LoadError(f"trace {path.stem} is not marked as a fake profile")
         traces.append(
             {
                 "trace_id": path.stem,

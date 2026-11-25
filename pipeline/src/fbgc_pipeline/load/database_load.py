@@ -22,6 +22,7 @@ from fbgc_core.db.models import (
 )
 from fbgc_pipeline.load.sources import LoadBundle, LoadError
 
+LOCAL_BACKENDS = frozenset({"sqlite", "postgresql"})
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 REMOTE_QUERY_KEYS = frozenset({"host", "hostaddr", "service", "servicefile", "passfile"})
 CLEARED = (Prediction, FeatureValue, PipelineTrace, Participant, CatalogueEntry)
@@ -29,8 +30,10 @@ BATCH = 5000
 
 
 def is_local_database(database_url: str | URL) -> bool:
-    """Fail closed: only SQLite, or a named local host with no query that redirects the host."""
+    """Fail closed: SQLite, or PostgreSQL on a named local host with no host-redirecting query."""
     url = make_url(database_url)
+    if url.get_backend_name() not in LOCAL_BACKENDS:
+        return False
     if url.get_backend_name() == "sqlite":
         return True
     if url.host not in LOCAL_HOSTS:

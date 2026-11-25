@@ -7,10 +7,11 @@ import os
 from pathlib import Path
 
 import typer
-from sqlalchemy import make_url
+from sqlalchemy import URL, make_url
 from sqlalchemy.exc import ArgumentError
 
 from fbgc_core.catalogue import default_catalogue
+from fbgc_core.settings import is_inside
 from fbgc_pipeline.anonymize.run import ANONYMIZED_DIR
 from fbgc_pipeline.cli.common import private_zone, repo_root
 from fbgc_pipeline.load.database_load import is_local_database, load_database
@@ -18,6 +19,13 @@ from fbgc_pipeline.load.sources import LoadError, private_bundle, synthetic_bund
 
 URL_HELP = "SQLAlchemy URL. Prefer $DATABASE_URL: a password on the command line shows in `ps`."
 LIBPQ_REDIRECTS = frozenset({"PGHOSTADDR", "PGSERVICE"})
+
+
+def sqlite_file_inside_repo(url: URL) -> bool:
+    """A file-based SQLite database whose path resolves inside the repository."""
+    if url.get_backend_name() != "sqlite" or url.database in (None, "", ":memory:"):
+        return False
+    return is_inside(Path(str(url.database)), repo_root())
 
 
 def load(
@@ -38,6 +46,9 @@ def load(
         raise typer.Exit(1) from None
     if private and (not is_local_database(parsed) or LIBPQ_REDIRECTS & os.environ.keys()):
         typer.echo("real (pseudonymous) data loads only into a local database before launch")
+        raise typer.Exit(1)
+    if private and sqlite_file_inside_repo(parsed):
+        typer.echo("private data must not be written inside the repository")
         raise typer.Exit(1)
     demo = traces if traces is not None else repo_root() / "data" / "demo"
     try:

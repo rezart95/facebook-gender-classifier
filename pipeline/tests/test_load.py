@@ -39,7 +39,8 @@ def synthetic_dir(tmp_path: Path) -> Path:
 def demo_dir(tmp_path: Path) -> Path:
     folder = tmp_path / "demo"
     folder.mkdir()
-    trace = {"profile_label": "fake-01", "stages": [{"stage": "raw_html", "snippet": "<p>"}]}
+    stages = [{"stage": "raw_html", "snippet": "<p>"}]
+    trace = {"profile_label": "fake-01", "fake": True, "stages": stages}
     (folder / "trace-fake-01.json").write_text(json.dumps(trace), encoding="utf-8")
     return folder
 
@@ -90,6 +91,20 @@ def test_unknown_feature_keys_are_refused(tmp_path: Path) -> None:
     bundle = synthetic_bundle(folder, demo_dir(tmp_path))
     with pytest.raises(LoadError, match="free_text"):
         load_database(database(tmp_path), bundle, default_catalogue())
+
+
+@pytest.mark.parametrize("marker", [None, False, "true", 1])
+def test_a_trace_not_marked_fake_is_refused(tmp_path: Path, marker: object) -> None:
+    folder = demo_dir(tmp_path)
+    path = folder / "trace-fake-01.json"
+    trace = json.loads(path.read_text(encoding="utf-8"))
+    trace.pop("fake")
+    if marker is not None:
+        trace["fake"] = marker
+    path.write_text(json.dumps(trace), encoding="utf-8")
+    with pytest.raises(LoadError) as raised:
+        synthetic_bundle(synthetic_dir(tmp_path), folder)
+    assert str(raised.value) == "trace trace-fake-01 is not marked as a fake profile"
 
 
 def test_local_database_urls() -> None:

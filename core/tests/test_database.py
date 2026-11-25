@@ -64,4 +64,5 @@ def test_local_postgres_is_postgres_17_bound_to_localhost() -> None:
     compose = CORE.parent / "infra" / "docker-compose.yml"
     service = yaml.safe_load(compose.read_text(encoding="utf-8"))["services"]["postgres"]
     assert service["image"] == "postgres:17"
+    assert service["ports"]
     assert all(port.startswith("127.0.0.1:") for port in service["ports"])
