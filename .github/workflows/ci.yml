@@ -19,3 +19,47 @@ jobs:
       - run: uv run pyright
       - run: uv run python tools/leak_guard.py --all
       - run: uv run pytest
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fbgc
+          POSTGRES_PASSWORD: fbgc-ci-only
+          POSTGRES_DB: fbgc
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fbgc -d fbgc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://fbgc:fbgc-ci-only@localhost:5432/fbgc
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked --all-packages
+      - run: uv run alembic -c core/alembic.ini upgrade head
+      - run: uv run fbgc load --synthetic
+      - run: uv run fbgc load --synthetic # a second load must replace, not duplicate
+      - name: Smoke query
+        run: |
+          uv run python - <<'PY'
+          import os
+
+          import sqlalchemy as sa
+
+          tables = ("feature_catalogue", "participants", "feature_values", "pipeline_traces")
+          engine = sa.create_engine(os.environ["DATABASE_URL"])
+          with engine.connect() as connection:
+              counts = {
+                  table: connection.execute(sa.text(f"select count(*) from {table}")).scalar_one()
+                  for table in tables
+              }
+          print(counts)
+          assert all(count > 0 for count in counts.values()), counts
+          PY

@@ -48,3 +48,15 @@ uv run fbgc anonymize --survey /path/outside/the/repo/datiScale_w1w2.Rdata
 
 This writes `participants.parquet` and `features_long.parquet` under
 `$FBGC_PRIVATE_DIR/anonymized/` and prints aggregate counts only.
+
+## Database (local)
+
+```bash
+docker compose -f infra/docker-compose.yml up -d
+export DATABASE_URL=postgresql+psycopg://fbgc:fbgc-local-only@127.0.0.1:5433/fbgc
+uv run alembic -c core/alembic.ini upgrade head
+uv run fbgc load --synthetic   # or --private, on the owner's machine and a local database only
+```
+
+`fbgc load` replaces the catalogue, the participants, their feature values and the demo traces in
+one transaction, so it can be run again safely.
