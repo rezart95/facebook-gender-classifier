@@ -91,8 +91,8 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
     assert list(synthetic["pid"][:2]) == ["S001", "S002"]
     counts = synthetic["msg_count"]
     assert (counts == counts.round()).all()
-    assert counts.min() >= features["msg_count"].quantile(0.01)
-    assert counts.max() <= features["msg_count"].quantile(0.99)
+    assert counts.min() >= np.floor(features["msg_count"].quantile(0.01))
+    assert counts.max() <= np.ceil(features["msg_count"].quantile(0.99))
     assert 0.1 < synthetic["gpius_total"].isna().mean() < 0.3
     rho = synthetic["msg_count"].corr(synthetic["msg_chars_mean"], method="spearman")
     assert rho > 0.8
@@ -102,18 +102,32 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
     assert people["has_messages"].tolist() == (synthetic["msg_count"] > 0).tolist()
 
 
-def test_marginals_are_clipped_so_no_real_extreme_is_stored_or_sampled() -> None:
+def outlier_tables() -> tuple[pd.DataFrame, pd.DataFrame, float, float]:
+    """Fake data with one huge and one tiny outlier; also the real 1% and 99% quantiles."""
     participants, features = real_tables()
     features["msg_hour_21"] = np.append(np.linspace(0, 10, 199), 1000.0)
     features.loc[0, "msg_hour_21"] = -500.0
-    model = fit_synthetic_model(participants, features, default_catalogue())
-    stored = model.quantiles[2]
+    low, high = (round(float(features["msg_hour_21"].quantile(q)), 4) for q in (0.01, 0.99))
+    return participants, features, low, high
+
+
+def test_the_model_stores_no_real_extreme() -> None:
+    participants, features, low, high = outlier_tables()
+    stored = fit_synthetic_model(participants, features, default_catalogue()).quantiles[2]
     assert features["msg_hour_21"].min() not in stored
     assert features["msg_hour_21"].max() not in stored
+    assert stored.min() == pytest.approx(low, abs=1e-4)
+    assert stored.max() == pytest.approx(high, abs=1e-4)
+
+
+def test_sampling_stays_within_the_clipped_quantiles() -> None:
+    """Bounds come from the data, not the model, so an unclipped model cannot satisfy them."""
+    participants, features, low, high = outlier_tables()
+    model = fit_synthetic_model(participants, features, default_catalogue())
     for seed in range(5):
         sampled = sample_synthetic(model, seed)[1]["msg_hour_21"]
-        assert sampled.max() < 1000.0
-        assert sampled.min() > -500.0
+        assert sampled.max() <= high + 1e-4
+        assert sampled.min() >= low - 1e-4
 
 
 def test_an_all_null_category_becomes_a_single_unknown_category() -> None:

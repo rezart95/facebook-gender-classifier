@@ -1,12 +1,12 @@
 """Fit a Gaussian-copula model of the anonymized data from aggregate statistics only.
 
-Kept per feature: the 0-100% quantiles in 1% steps and the missing rate. Kept jointly: the
-Spearman matrix of the features plus gender (F = 1), turned into Pearson correlations with
-2 sin(pi rho / 6) and projected to the nearest positive semi-definite matrix (optionally
-shrunk toward the identity). Category shares of wave, age band and relationship are kept
-too. The model holds aggregates only, and its marginals are clipped to the 1%-99% quantiles:
-the exact real minimum and maximum of a feature are never stored (nor, through sampling,
-produced). No row of the data is kept.
+Kept per feature: the 1%-99% quantiles (stored on a 101-point grid) and the missing rate.
+Kept jointly: the Spearman matrix of the features plus gender (F = 1), turned into Pearson
+correlations with 2 sin(pi rho / 6) and projected to the nearest positive semi-definite
+matrix (optionally shrunk toward the identity). Category shares of wave, age band and
+relationship are kept too. The model holds aggregates only, and its marginals are clipped to
+the 1%-99% quantiles: the exact real minimum and maximum of a feature are never stored (nor,
+through sampling, produced). No row of the data is kept.
 """
 
 from __future__ import annotations
