@@ -4,7 +4,9 @@ Kept per feature: the 0-100% quantiles in 1% steps and the missing rate. Kept jo
 Spearman matrix of the features plus gender (F = 1), turned into Pearson correlations with
 2 sin(pi rho / 6) and projected to the nearest positive semi-definite matrix (optionally
 shrunk toward the identity). Category shares of wave, age band and relationship are kept
-too. No row of the data is kept.
+too. The model holds aggregates only, and its marginals are clipped to the 1%-99% quantiles:
+the exact real minimum and maximum of a feature are never stored (nor, through sampling,
+produced). No row of the data is kept.
 """
 
 from __future__ import annotations
@@ -17,6 +19,8 @@ import pandas as pd
 from fbgc_core.catalogue_model import Catalogue, FeatureSpec
 
 LEVELS = np.linspace(0.0, 1.0, 101)
+CLIP = (0.01, 0.99)  # marginals stop here: the real min and max are the most identifying values
+UNKNOWN = "unknown"
 CATEGORY_COLUMNS = ("wave", "age_band", "relationship")
 GENDER_COLUMN = "__gender__"
 
@@ -62,11 +66,13 @@ def missing_block(spec: FeatureSpec) -> str:
 
 def marginal_quantiles(values: pd.Series) -> np.ndarray:
     observed = values.dropna().to_numpy(dtype=float)
-    return np.quantile(observed, LEVELS) if observed.size else np.zeros(LEVELS.size)
+    return np.quantile(observed, np.clip(LEVELS, *CLIP)) if observed.size else np.zeros(LEVELS.size)
 
 
 def category_shares(values: pd.Series) -> Shares:
     shares = values.value_counts(normalize=True).sort_index()
+    if shares.empty:  # an all-null column is one "unknown" category
+        return (UNKNOWN,), (1.0,)
     return tuple(shares.index.tolist()), tuple(float(share) for share in shares.to_numpy())
 
 

@@ -64,8 +64,8 @@ def test_fit_keeps_aggregates_only() -> None:
     model = fit_synthetic_model(participants, features, default_catalogue())
     assert model.keys == ("msg_count", "msg_chars_mean", "msg_hour_21", "gpius_total")
     assert model.quantiles.shape == (4, 101)
-    assert model.quantiles[0, 0] == features["msg_count"].min()
-    assert model.quantiles[0, -1] == features["msg_count"].max()
+    assert model.quantiles[0, 0] == pytest.approx(features["msg_count"].quantile(0.01))
+    assert model.quantiles[0, -1] == pytest.approx(features["msg_count"].quantile(0.99))
     assert model.missing_rates[3] == pytest.approx(features["gpius_total"].isna().mean())
     assert model.counts.tolist() == [True, False, False, False]
     assert model.blocks == ("msg", "msg", "msg", "survey")
@@ -91,8 +91,8 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
     assert list(synthetic["pid"][:2]) == ["S001", "S002"]
     counts = synthetic["msg_count"]
     assert (counts == counts.round()).all()
-    assert counts.min() >= features["msg_count"].min()
-    assert counts.max() <= features["msg_count"].max()
+    assert counts.min() >= features["msg_count"].quantile(0.01)
+    assert counts.max() <= features["msg_count"].quantile(0.99)
     assert 0.1 < synthetic["gpius_total"].isna().mean() < 0.3
     rho = synthetic["msg_count"].corr(synthetic["msg_chars_mean"], method="spearman")
     assert rho > 0.8
@@ -100,3 +100,26 @@ def test_samples_follow_the_marginals_and_the_correlation() -> None:
     assert set(people["wave"]) <= {1, 2}
     assert people["has_survey"].tolist() == synthetic["gpius_total"].notna().tolist()
     assert people["has_messages"].tolist() == (synthetic["msg_count"] > 0).tolist()
+
+
+def test_marginals_are_clipped_so_no_real_extreme_is_stored_or_sampled() -> None:
+    participants, features = real_tables()
+    features["msg_hour_21"] = np.append(np.linspace(0, 10, 199), 1000.0)
+    features.loc[0, "msg_hour_21"] = -500.0
+    model = fit_synthetic_model(participants, features, default_catalogue())
+    stored = model.quantiles[2]
+    assert features["msg_hour_21"].min() not in stored
+    assert features["msg_hour_21"].max() not in stored
+    for seed in range(5):
+        sampled = sample_synthetic(model, seed)[1]["msg_hour_21"]
+        assert sampled.max() < 1000.0
+        assert sampled.min() > -500.0
+
+
+def test_an_all_null_category_becomes_a_single_unknown_category() -> None:
+    participants, features = real_tables()
+    participants["age_band"] = None
+    model = fit_synthetic_model(participants, features, default_catalogue())
+    assert model.categories["age_band"] == (("unknown",), (1.0,))
+    people, _ = sample_synthetic(model, 7)
+    assert set(people["age_band"]) == {"unknown"}
