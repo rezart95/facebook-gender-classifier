@@ -67,10 +67,7 @@ def shrink(correlation: np.ndarray, shrinkage: float) -> np.ndarray:
 
 
 def missing_block(spec: FeatureSpec) -> str:
-    if spec.origin == "survey":
-        return "survey"
-    prefix = spec.key.split("_", 1)[0]
-    return "msg" if prefix == "dict" else prefix  # dictionary features need messages
+    return "survey" if spec.origin == "survey" else spec.key.split("_", 1)[0]
 
 
 def marginal_quantiles(values: pd.Series) -> np.ndarray:
