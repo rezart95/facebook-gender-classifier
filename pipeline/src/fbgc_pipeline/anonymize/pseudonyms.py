@@ -1,7 +1,8 @@
 """Pseudonymous participant IDs: P001..Pnnn, ranked by HMAC-SHA256 over (wave, folder code).
 
-The ranking needs the secret, so the IDs are stable across runs yet cannot be mapped back
-without it. No mapping file is ever written; the secret stays in memory.
+The ranking needs the secret, so the IDs are stable across runs over the same set of rows
+yet cannot be mapped back without it. No mapping file is ever written; the secret stays in
+memory.
 """
 
 from __future__ import annotations

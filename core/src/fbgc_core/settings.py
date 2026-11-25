@@ -34,7 +34,7 @@ def is_inside(path: Path, root: Path) -> bool:
 
 
 class PrivateZone(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="FBGC_")
+    model_config = SettingsConfigDict(env_prefix="FBGC_", hide_input_in_errors=True)
 
     raw_dir: Path
     private_dir: Path
