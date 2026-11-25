@@ -42,7 +42,8 @@ The anonymized tables use pseudonymous IDs keyed by a secret of at least 32 char
 secret never leaves the machine and is never written to any file.
 
 ```bash
-export FBGC_ID_SECRET=...   # at least 32 characters, kept offline
+# Paste the secret (32+ characters) when asked: it is not echoed and stays out of shell history.
+read -rs FBGC_ID_SECRET && export FBGC_ID_SECRET
 uv run fbgc anonymize --survey /path/outside/the/repo/datiScale_w1w2.Rdata
 ```
 

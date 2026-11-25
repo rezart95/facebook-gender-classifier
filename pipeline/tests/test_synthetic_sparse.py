@@ -90,3 +90,17 @@ def test_build_synthetic_skips_sparse_features_in_the_distance_check() -> None:
     )
     dataset = build_synthetic(participants, pd.concat([long, extra]), default_catalogue(), 3)
     assert "msg_hour_22" not in dataset.features.columns
+
+
+def test_dictionary_features_go_missing_with_the_message_features() -> None:
+    participants, features = tables()
+    features["dict_owner_group_domanda"] = np.linspace(0, 1, 200)
+    features.loc[:39, ["msg_count", "dict_owner_group_domanda"]] = np.nan  # no messages
+    model = fit_synthetic_model(participants, features, default_catalogue())
+    assert model.blocks[model.keys.index("dict_owner_group_domanda")] == "msg"
+    for seed in range(3):
+        sampled = sample_synthetic(model, seed)[1]
+        no_messages = sampled["msg_count"].isna()
+        assert no_messages.any()
+        assert sampled.loc[no_messages, "dict_owner_group_domanda"].isna().all()
+        assert sampled.loc[~no_messages, "dict_owner_group_domanda"].notna().all()
