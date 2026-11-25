@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import Connection, create_engine, delete, insert, make_url
+from sqlalchemy import URL, Connection, create_engine, delete, insert, make_url
 
 from fbgc_core.catalogue_model import Catalogue
 from fbgc_core.db.models import (
@@ -23,13 +23,19 @@ from fbgc_core.db.models import (
 from fbgc_pipeline.load.sources import LoadBundle, LoadError
 
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+REMOTE_QUERY_KEYS = frozenset({"host", "hostaddr", "service", "servicefile", "passfile"})
 CLEARED = (Prediction, FeatureValue, PipelineTrace, Participant, CatalogueEntry)
 BATCH = 5000
 
 
-def is_local_database(url: str) -> bool:
-    host = make_url(url).host
-    return host is None or host in LOCAL_HOSTS
+def is_local_database(database_url: str | URL) -> bool:
+    """Fail closed: only SQLite, or a named local host with no query that redirects the host."""
+    url = make_url(database_url)
+    if url.get_backend_name() == "sqlite":
+        return True
+    if url.host not in LOCAL_HOSTS:
+        return False
+    return not {key.lower() for key in url.query} & REMOTE_QUERY_KEYS
 
 
 def catalogue_rows(catalogue: Catalogue) -> list[dict[str, Any]]:
@@ -73,10 +79,10 @@ def insert_rows(connection: Connection, model: type[Base], rows: Sequence[dict[s
         connection.execute(insert(model), list(rows[start : start + BATCH]))
 
 
-def load_database(url: str, bundle: LoadBundle, catalogue: Catalogue) -> dict[str, int]:
+def load_database(url: str | URL, bundle: LoadBundle, catalogue: Catalogue) -> dict[str, int]:
     participants = participant_rows(bundle)
     values = value_rows(bundle, set(catalogue.keys()))
-    engine = create_engine(url)
+    engine = create_engine(url, hide_parameters=True)
     try:
         with engine.begin() as connection:
             for model in CLEARED:

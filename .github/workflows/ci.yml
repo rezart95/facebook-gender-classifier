@@ -45,10 +45,10 @@ jobs:
       - run: uv sync --locked --all-packages
       - run: uv run alembic -c core/alembic.ini upgrade head
       - run: uv run fbgc load --synthetic
-      - run: uv run fbgc load --synthetic # a second load must replace, not duplicate
-      - name: Smoke query
+      - name: Count rows after the first load
         run: |
           uv run python - <<'PY'
+          import json
           import os
 
           import sqlalchemy as sa
@@ -61,5 +61,26 @@ jobs:
                   for table in tables
               }
           print(counts)
+          json.dump(counts, open(os.path.join(os.environ["RUNNER_TEMP"], "first.json"), "w"))
+          PY
+      - run: uv run fbgc load --synthetic # a second load must replace, not duplicate
+      - name: Smoke query
+        run: |
+          uv run python - <<'PY'
+          import json
+          import os
+
+          import sqlalchemy as sa
+
+          tables = ("feature_catalogue", "participants", "feature_values", "pipeline_traces")
+          engine = sa.create_engine(os.environ["DATABASE_URL"])
+          with engine.connect() as connection:
+              counts = {
+                  table: connection.execute(sa.text(f"select count(*) from {table}")).scalar_one()
+                  for table in tables
+              }
+          print(counts)
+          first = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "first.json")))
           assert all(count > 0 for count in counts.values()), counts
+          assert first == counts, ("the second load changed the row counts", first, counts)
           PY
