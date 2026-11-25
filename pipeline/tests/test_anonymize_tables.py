@@ -10,7 +10,7 @@ SECRET = "t" * 32
 KEYS = ["msg_count", "friends_accepted", "gpius_total"]
 
 
-def profile_rows(n_female: int = 5, n_male: int = 5) -> pd.DataFrame:
+def profile_rows(n_female: int = 5, n_male: int = 5, n_married: int = 0) -> pd.DataFrame:
     """Extracted rows: 5 women and 5 men aged 20, one row without gender, one failed row."""
     rows: list[dict[str, object]] = []
     for index in range(n_female + n_male):
@@ -22,7 +22,7 @@ def profile_rows(n_female: int = 5, n_male: int = 5) -> pd.DataFrame:
                 "language": "it",
                 "gender": "F" if index < n_female else "M",
                 "age_at_download": 20.0,
-                "relationship": "married" if index >= n_female + 3 else "single",
+                "relationship": "married" if index >= n_female + n_male - n_married else "single",
                 "msg_count": float(index),
                 "friends_accepted": 120.0 + index,
                 "gpius_total": 2.5 if index % 2 else math.nan,
@@ -40,11 +40,12 @@ def test_participants_are_coarse_and_keyed_by_pid() -> None:
     assert tuple(people.columns) == PARTICIPANT_COLUMNS
     assert list(people["pid"]) == [f"P{rank:03d}" for rank in range(1, 11)]
     assert set(people["age_band"]) == {"20"}
-    assert people["relationship"].value_counts().to_dict() == {"single": 8, "unknown": 2}
+    assert people["relationship"].value_counts().to_dict() == {"single": 10}
     assert int(people["has_messages"].sum()) == 9
     assert int(people["has_survey"].sum()) == 5
     assert data.summary["dropped_without_gender"] == 1
     assert data.summary["age_level"] == 0
+    assert data.summary["relationship_level"] == 0
     assert data.summary["smallest_cell"] == 5
 
 
@@ -76,3 +77,10 @@ def test_pids_depend_on_the_secret_only_through_their_order() -> None:
 def test_too_few_people_in_a_cell_fails() -> None:
     with pytest.raises(KAnonymityError):
         anonymize_profiles(profile_rows(n_female=4), KEYS, SECRET)
+
+
+def test_thin_relationship_cells_are_generalised_not_published() -> None:
+    data = anonymize_profiles(profile_rows(n_married=2), KEYS, SECRET)
+    assert data.participants["relationship"].value_counts().to_dict() == {"unknown": 10}
+    assert data.summary["relationship_level"] == 2
+    assert data.summary["smallest_cell"] == 5

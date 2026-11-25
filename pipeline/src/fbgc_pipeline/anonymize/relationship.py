@@ -75,3 +75,17 @@ def suppress_rare(categories: Sequence[str], k: int) -> list[str]:
     if 0 < Counter(merged)["other"] < k:
         merged = ["unknown" if category == "other" else category for category in merged]
     return merged
+
+
+RELATIONSHIP_LEVELS = 3
+
+
+def generalize_relationship(category: str, level: int) -> str:
+    """Level 0 keeps the category; 1 merges the partnered ones; 2 hides the relationship."""
+    if level == 0:
+        return category
+    if level == 1:
+        return category if category in ("single", "unknown") else "in_relationship"
+    if level == 2:
+        return "unknown"
+    raise ValueError("unknown relationship level")

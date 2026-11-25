@@ -21,7 +21,7 @@ def tables() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def check(participants: pd.DataFrame, features: pd.DataFrame, codes: set[str]) -> None:
-    scrub_check(participants, features, codes, {"msg_count"}, k=5)
+    scrub_check(participants, features, codes, k=5)
 
 
 def test_clean_tables_pass() -> None:
@@ -30,7 +30,9 @@ def test_clean_tables_pass() -> None:
 
 def test_an_unexpected_text_column_fails() -> None:
     participants, features = tables()
-    with pytest.raises(AnonymizationError, match=r"unexpected text columns: \['note'\]"):
+    with pytest.raises(
+        AnonymizationError, match=r"participants has unexpected columns: \['note'\]"
+    ):
         check(participants.assign(note="hello"), features, set())
 
 
@@ -56,6 +58,13 @@ def test_a_folder_code_anywhere_fails_without_being_printed() -> None:
     assert "P003" not in str(error.value)
 
 
+def test_a_folder_code_in_a_feature_key_fails_without_being_printed() -> None:
+    participants, features = tables()
+    with pytest.raises(AnonymizationError, match="features.feature_key holds a folder code") as e:
+        check(participants, features, {"MSG_COUNT"})
+    assert "msg_count" not in str(e.value).lower()
+
+
 def test_a_non_pid_fails() -> None:
     participants, features = tables()
     participants.loc[0, "pid"] = "ALPHA"
@@ -63,15 +72,43 @@ def test_a_non_pid_fails() -> None:
         check(participants, features, set())
 
 
+def test_a_non_pid_in_the_features_table_fails() -> None:
+    participants, features = tables()
+    features.loc[0, "pid"] = "alpha"
+    with pytest.raises(AnonymizationError, match="features.pid holds a value that is not a P-ID"):
+        check(participants, features, set())
+
+
 def test_an_unknown_feature_key_fails() -> None:
     participants, features = tables()
     features.loc[0, "feature_key"] = "free_text"
+    with pytest.raises(AnonymizationError, match="unknown feature key") as error:
+        check(participants, features, set())
+    assert "free_text" not in str(error.value)
+
+
+def test_a_private_column_name_is_not_a_known_feature_key() -> None:
+    participants, features = tables()
+    features.loc[0, "feature_key"] = "age_at_download"
     with pytest.raises(AnonymizationError, match="unknown feature key"):
         check(participants, features, set())
+
+
+def test_survey_feature_keys_are_known() -> None:
+    participants, features = tables()
+    features.loc[0, "feature_key"] = "gpius_total"
+    check(participants, features, set())
 
 
 def test_a_small_cell_fails() -> None:
     participants, features = tables()
     participants.loc[0, "gender"] = "M"
+    with pytest.raises(AnonymizationError, match="fewer than 5 people"):
+        check(participants, features, set())
+
+
+def test_a_thin_relationship_cell_fails() -> None:
+    participants, features = tables()
+    participants.loc[0, "relationship"] = "married"
     with pytest.raises(AnonymizationError, match="fewer than 5 people"):
         check(participants, features, set())
