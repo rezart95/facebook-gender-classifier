@@ -30,6 +30,7 @@ LABELS = {
         "events": "Events",
     },
 }
+FAKE_MARKER = "fake.profile@example.org"  # every fake export carries it; `fbgc trace` checks it
 PROFILE_LINK = (
     '<a href="https://www.facebook.com/fake.profile">https://www.facebook.com/fake.profile</a>'
 )
@@ -62,7 +63,7 @@ def render_index(profile: FakeProfile) -> str:
     labels = _labels(profile)
     rows = [
         (labels["profile"], PROFILE_LINK),
-        (labels["email"], "fake.profile@example.org"),
+        (labels["email"], FAKE_MARKER),
         (labels["registered"], _text(_when(profile, profile.registered_at))),
         (labels["birthday"], _text(profile.birthday)),
         (labels["gender"], _text(profile.gender_label)),

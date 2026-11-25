@@ -1,7 +1,8 @@
 # Feature catalogue: the single source of truth for every feature.
 # Templated families expand to one feature per combination of their `expand` values;
 # keys are lowercased after expansion. `legacy` is the column in the 2019 feature table
-# (null, or listed under `legacy_missing`, when 2019 had no such column).
+# (null, or listed under `legacy_missing`, when 2019 had no such column). Survey features keep
+# the 2019 scale-file column (datiScale_w1w2) as `legacy`.
 version: 1
 families:
   - name: messages
@@ -14,7 +15,7 @@ families:
         it: Persone distinte che hanno scritto nelle chat dell'utente, utente incluso
       - key: msg_per_contact
         legacy: msg_mess_medi_friend
-        unit: messages
+        unit: messages_per_person
         en: Messages per distinct person
         it: Messaggi per persona distinta
       - key: msg_count
@@ -34,22 +35,22 @@ families:
         it: Lunghezza del messaggio più corto
       - key: msg_chars_q1
         legacy: msg_nchar_stats.nchar_per_text.1st.Qu.
-        unit: characters
+        unit: characters_per_message
         en: First quartile of message length
         it: Primo quartile della lunghezza dei messaggi
       - key: msg_chars_median
         legacy: msg_nchar_stats.nchar_per_text.Median
-        unit: characters
+        unit: characters_per_message
         en: Median message length
         it: Lunghezza mediana dei messaggi
       - key: msg_chars_mean
         legacy: msg_nchar_stats.nchar_per_text.Mean
-        unit: characters
+        unit: characters_per_message
         en: Mean message length
         it: Lunghezza media dei messaggi
       - key: msg_chars_q3
         legacy: msg_nchar_stats.nchar_per_text.3rd.Qu.
-        unit: characters
+        unit: characters_per_message
         en: Third quartile of message length
         it: Terzo quartile della lunghezza dei messaggi
       - key: msg_chars_max
@@ -232,3 +233,118 @@ families:
              "importa", "NonMImporta", "nonImporta", "frustrante", "merito", "colpa",
              "disperato", "sopportare", "conseguenza", "causa", "perdono", "sento", "comeSento",
              "senti", "comeSenti", "si", "no", "niente", "assolutamente", "tu"]
+
+  # Survey scales (origin "survey"): scores from the 2019 scale file, joined by folder code.
+  - name: survey_gpius
+    origin: survey
+    features:
+      - {key: gpius_posi, legacy: F_posi, unit: score,
+         en: "GPIUS2 preference for online social interaction (1–8, higher = more problematic)",
+         it: "GPIUS2 preferenza per l'interazione sociale online (1–8, più alto = più problematico)"}
+      - {key: gpius_mood, legacy: F_mood, unit: score,
+         en: "GPIUS2 mood regulation online (1–8, higher = more problematic)",
+         it: "GPIUS2 regolazione dell'umore online (1–8, più alto = più problematico)"}
+      - {key: gpius_cognitive, legacy: F_cognitive, unit: score,
+         en: "GPIUS2 cognitive preoccupation (1–8, higher = more problematic)",
+         it: "GPIUS2 preoccupazione cognitiva (1–8, più alto = più problematico)"}
+      - {key: gpius_compulsive, legacy: F_compulsive, unit: score,
+         en: "GPIUS2 compulsive use (1–8, higher = more problematic)",
+         it: "GPIUS2 uso compulsivo (1–8, più alto = più problematico)"}
+      - {key: gpius_negative, legacy: F_negative, unit: score,
+         en: "GPIUS2 negative outcomes (1–8, higher = more problematic)",
+         it: "GPIUS2 conseguenze negative (1–8, più alto = più problematico)"}
+      - {key: gpius_total, legacy: F_total, unit: score,
+         en: "GPIUS2 total problematic Internet use (1–8, higher = more problematic)",
+         it: "GPIUS2 uso problematico di Internet, totale (1–8, più alto = più problematico)"}
+
+  - name: survey_motives
+    origin: survey
+    features:
+      - {key: motive_coping, legacy: E_coping, unit: score,
+         en: "Facebook use to cope with negative feelings (0–5)",
+         it: "Uso di Facebook per gestire le emozioni negative (0–5)"}
+      - {key: motive_conformity, legacy: E_conformity, unit: score,
+         en: "Facebook use to fit in with others (0–5)",
+         it: "Uso di Facebook per sentirsi accettati dagli altri (0–5)"}
+      - {key: motive_enhancement, legacy: E_enhancement, unit: score,
+         en: "Facebook use to feel good or excited (0–5)",
+         it: "Uso di Facebook per provare emozioni positive (0–5)"}
+      - {key: motive_social, legacy: E_social, unit: score,
+         en: "Facebook use to socialise (0–5)",
+         it: "Uso di Facebook per socializzare (0–5)"}
+
+  - name: survey_big_five
+    origin: survey
+    template:
+      key: "big5_{t[key]}"
+      legacy: "H_{t[legacy]}"
+      unit: score
+      en: "Big Five {t[en]} (mean of 4 items, 1–5; 1 = absolutely true for me, so lower scores mean more {t[en]})"
+      it: "Big Five {t[it]} (media di 4 item, 1–5; 1 = assolutamente vero per me, quindi punteggi più bassi indicano più {t[it]})"
+    expand:
+      t:
+        - {key: openness, legacy: openess, en: openness, it: apertura mentale}
+        - {key: emotional_stability, legacy: emotional, en: emotional stability, it: stabilità emotiva}
+        - {key: conscientiousness, legacy: contious, en: conscientiousness, it: coscienziosità}
+        - {key: extraversion, legacy: extraversion, en: extraversion, it: estroversione}
+        - {key: agreeableness, legacy: agreebleness, en: agreeableness, it: amicalità}
+
+  - name: survey_social_emotional
+    origin: survey
+    template:
+      key: "seh_{s[key]}"
+      legacy: "I_{s[key]}"
+      unit: score
+      en: "Social-emotional health: {s[en]} (higher = stronger; items scored 1–4, gratitude and zest 1–5)"
+      it: "Salute socio-emotiva: {s[it]} (più alto = più forte; item da 1–4, gratitudine ed entusiasmo da 1–5)"
+    expand:
+      s:
+        - {key: self_efficacy, en: self-efficacy, it: autoefficacia}
+        - {key: self_awareness, en: self-awareness, it: consapevolezza di sé}
+        - {key: persistence, en: persistence, it: perseveranza}
+        - {key: school_support, en: school support, it: sostegno scolastico}
+        - {key: family_coherence, en: family coherence, it: coesione familiare}
+        - {key: peer_support, en: peer support, it: sostegno dei pari}
+        - {key: emotional_regulation, en: emotional regulation, it: regolazione emotiva}
+        - {key: empathy, en: empathy, it: empatia}
+        - {key: behavioral_self_control, en: behavioural self-control,
+           it: autocontrollo comportamentale}
+        - {key: optimism, en: optimism, it: ottimismo}
+        - {key: gratitude, en: gratitude, it: gratitudine}
+        - {key: zest, en: zest, it: entusiasmo}
+        - {key: belief_in_self, en: "belief in self (self-efficacy, self-awareness, persistence)",
+           it: "fiducia in sé (autoefficacia, consapevolezza di sé, perseveranza)"}
+        - {key: belief_in_others,
+           en: "belief in others (school support, family coherence, peer support)",
+           it: "fiducia negli altri (sostegno scolastico, coesione familiare, sostegno dei pari)"}
+        - {key: emotional_competence,
+           en: "emotional competence (emotional regulation, empathy, behavioural self-control)",
+           it: "competenza emotiva (regolazione emotiva, empatia, autocontrollo comportamentale)"}
+        - {key: engaged_living, en: "engaged living (gratitude, zest, optimism)",
+           it: "vita coinvolta (gratitudine, entusiasmo, ottimismo)"}
+        - {key: total, en: "total score (covitality)", it: "punteggio totale (covitalità)"}
+
+  - name: survey_self_esteem
+    origin: survey
+    features:
+      - {key: self_esteem, legacy: autostima, unit: score,
+         en: "Rosenberg self-esteem score (1–4)", it: "Autostima di Rosenberg (1–4)"}
+
+  - name: survey_metacognitions
+    origin: survey
+    features:
+      - {key: mcq_positive_beliefs, legacy: M_pos, unit: score,
+         en: "Metacognitions (MCQ): positive beliefs about worry (1–4; missing in one wave)",
+         it: "Metacognizioni (MCQ): convinzioni positive sul rimuginio (1–4; assente in un'ondata)"}
+      - {key: mcq_negative_beliefs, legacy: M_neg, unit: score,
+         en: "Metacognitions (MCQ): worry is uncontrollable and dangerous (1–4; missing in one wave)",
+         it: "Metacognizioni (MCQ): il rimuginio è incontrollabile e pericoloso (1–4; assente in un'ondata)"}
+      - {key: mcq_cognitive_confidence, legacy: M_cc, unit: score,
+         en: "Metacognitions (MCQ): low cognitive confidence (1–4; missing in one wave)",
+         it: "Metacognizioni (MCQ): scarsa fiducia cognitiva (1–4; assente in un'ondata)"}
+      - {key: mcq_need_control, legacy: M_nc, unit: score,
+         en: "Metacognitions (MCQ): need to control thoughts (1–4; missing in one wave)",
+         it: "Metacognizioni (MCQ): bisogno di controllare i pensieri (1–4; assente in un'ondata)"}
+      - {key: mcq_cognitive_self_consciousness, legacy: M_csc, unit: score,
+         en: "Metacognitions (MCQ): cognitive self-consciousness (1–4; missing in one wave)",
+         it: "Metacognizioni (MCQ): autoconsapevolezza cognitiva (1–4; assente in un'ondata)"}

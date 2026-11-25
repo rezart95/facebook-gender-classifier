@@ -14,7 +14,7 @@ from fbgc_core.catalogue_model import Catalogue
 RELATIVE_TOLERANCE = 1e-9  # near-exact: absorbs float noise only
 ABSOLUTE_FLOOR = 1e-12
 CLOSE_TOLERANCE = 5e-4  # "close": also absorbs R/Python rounding differences
-NON_DICTIONARY_FAMILIES = ("dictionary",)
+DICTIONARY_FAMILIES = ("dictionary",)
 
 
 @dataclass(frozen=True)
@@ -101,7 +101,7 @@ def overall_close_rate(comparisons: Sequence[ColumnComparison]) -> float:
 
 
 def non_dictionary(comparisons: Sequence[ColumnComparison]) -> list[ColumnComparison]:
-    return [c for c in comparisons if c.family not in NON_DICTIONARY_FAMILIES]
+    return [c for c in comparisons if c.family not in DICTIONARY_FAMILIES]
 
 
 def gender_agreement(ours: pd.DataFrame, legacy_gender: pd.Series) -> tuple[int, float]:
