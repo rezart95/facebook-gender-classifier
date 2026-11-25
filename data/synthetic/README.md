@@ -18,6 +18,7 @@ How it was made (`fbgc synth-data`, fixed seed):
   Wave, age band and relationship were drawn from their overall shares.
 - Rows were sampled from a Gaussian copula. Counts were rounded to whole numbers, other values kept
   to 4 decimals, and missing values put back at the real rates.
+- Correlations were shrunk toward zero by 0.25 (`--shrinkage 0.25`) so that the privacy check passes.
 - Privacy check: the 5th percentile of the distance from each synthetic row to its closest real row
   is at least the 5th percentile of the distance between real rows, and the real rows must be
   distinct (that percentile is above 0), or the data is not written.
