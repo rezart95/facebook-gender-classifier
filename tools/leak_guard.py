@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
-from leak_guard_scan import CODE_PATTERN, scannable_text, text_problems
+from leak_guard_scan import CODE_PATTERN, pid_problems, scannable_text, text_problems
 
 MAX_BYTES = 2 * 1024 * 1024
 PAGE_SUFFIXES = frozenset({".htm", ".html"})
@@ -25,6 +25,7 @@ DATA_SUFFIXES = frozenset(
 LOCAL_ONLY_PREFIX = "docs/superpowers/"
 DATA_ALLOWED = ("data/synthetic/", "pipeline/src/fbgc_pipeline/features/faithful/data/")
 R_DATA_SUFFIXES = frozenset({".rdata", ".rda", ".rds"})
+PID_FREE_PREFIX = "data/synthetic/"  # public data: no private P-ID may appear in it
 ALLOWLIST_PATH = Path(__file__).with_name("leak_guard_allowlist.txt")
 WAVE_DIRS = ("wave1", "wave2")
 JUNK_NAMES = frozenset({"__MACOSX", ".DS_Store", ".directory"})
@@ -78,6 +79,7 @@ def check_file(
     rel: str, data: bytes, allowlist: set[str], private_codes: set[str], show_tokens: bool
 ) -> list[str]:
     suffix = PurePosixPath(rel).suffix.lower()  # taken before the name may be withheld
+    in_public_data = rel.startswith(PID_FREE_PREFIX)
     problems = path_problems(rel, len(data))
     if any(code in rel.upper() for code in private_codes):
         problems.append("file name contains a real folder code")
@@ -92,6 +94,8 @@ def check_file(
         problems.append("unreadable Parquet file")
     else:
         problems += text_problems(text, allowlist, private_codes, show_tokens)
+        if in_public_data:
+            problems += pid_problems(text)
     return [f"{rel}: {problem}" for problem in problems]
 
 

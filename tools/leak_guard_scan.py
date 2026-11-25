@@ -15,6 +15,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 CODE_PATTERN = re.compile(r"(?<![A-Za-z0-9])[A-Z]{2,3}\d{2,5}(?![A-Za-z0-9])")
+PID_PATTERN = re.compile(r"(?<![A-Za-z0-9])P\d{3,}(?![A-Za-z0-9])")  # private participant ids
 BINARY_SUFFIXES = frozenset({".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff2"})
 PARQUET_SUFFIX = ".parquet"
 
@@ -34,6 +35,11 @@ def text_problems(
     if any(code in upper_text for code in private_codes):
         problems.append("contains a real folder code")
     return problems
+
+
+def pid_problems(text: str) -> list[str]:
+    """Participant ids (P-IDs) are named nowhere: the finding states the kind only."""
+    return ["contains a participant id (P-ID)"] if PID_PATTERN.search(text) else []
 
 
 def _decoded(blob: bytes) -> str:
