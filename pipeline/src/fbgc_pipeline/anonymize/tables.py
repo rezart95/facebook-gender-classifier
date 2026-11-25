@@ -23,7 +23,12 @@ from fbgc_pipeline.anonymize.columns import (
     PRIVATE_INPUT_COLUMNS,
     published_feature_keys,
 )
-from fbgc_pipeline.anonymize.k_anonymity import K_MIN, choose_levels, smallest_cell
+from fbgc_pipeline.anonymize.k_anonymity import (
+    K_MIN,
+    choose_levels,
+    require_minimum_k,
+    smallest_cell,
+)
 from fbgc_pipeline.anonymize.pseudonyms import pid_key, pseudonymous_ids
 from fbgc_pipeline.anonymize.relationship import generalize_relationship, suppress_rare
 from fbgc_pipeline.anonymize.scrub import scrub_check
@@ -56,6 +61,11 @@ def column_or(frame: pd.DataFrame, column: str, default: object) -> pd.Series:
     return frame[column] if column in frame.columns else pd.Series(default, index=frame.index)
 
 
+def survey_flags(frame: pd.DataFrame) -> np.ndarray:
+    """Only an explicit True counts: a missing or NA flag fails safe to False."""
+    return column_or(frame, "has_survey", False).eq(True).fillna(False).astype(bool).to_numpy()
+
+
 def check_feature_keys(keys: Sequence[str]) -> None:
     """Refuse keys that are not published features. Only the count is reported, never the keys."""
     allowed = published_feature_keys() - PRIVATE_INPUT_COLUMNS
@@ -84,7 +94,7 @@ def participant_table(
             "age_band": [age_band(age, age_level) for age in ages],
             "relationship": [generalize_relationship(r, relationship_level) for r in relationships],
             "has_messages": (usable["msg_count"].fillna(0) > 0).to_numpy(),
-            "has_survey": column_or(usable, "has_survey", False).eq(True).to_numpy(),
+            "has_survey": survey_flags(usable),
         }
     )
     return table[list(PARTICIPANT_COLUMNS)], age_level, relationship_level
@@ -104,6 +114,7 @@ def feature_table(usable: pd.DataFrame, pids: list[str], keys: Sequence[str]) ->
 def anonymize_profiles(
     profiles: pd.DataFrame, feature_keys: Sequence[str], secret: str, k: int = K_MIN
 ) -> AnonymizedData:
+    require_minimum_k(k)
     check_feature_keys(feature_keys)
     extracted = profiles[profiles["status"] == "ok"]
     usable = extracted[extracted["gender"].notna()].reset_index(drop=True)

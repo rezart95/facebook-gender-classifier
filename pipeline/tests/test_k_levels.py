@@ -10,14 +10,14 @@ def test_level_zero_keeps_every_category() -> None:
     assert [generalize_relationship(label, 0) for label in RELATIONSHIPS] == list(RELATIONSHIPS)
 
 
-def test_level_one_merges_the_partnered_categories() -> None:
+def test_level_one_merges_the_partnered_categories_and_never_guesses_a_status() -> None:
     merged = {label: generalize_relationship(label, 1) for label in RELATIONSHIPS}
     assert merged == {
         "single": "single",
         "in_relationship": "in_relationship",
         "engaged": "in_relationship",
         "married": "in_relationship",
-        "other": "in_relationship",
+        "other": "unknown",
         "unknown": "unknown",
     }
 

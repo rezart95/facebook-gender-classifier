@@ -12,6 +12,12 @@ from fbgc_pipeline.anonymize.relationship import RELATIONSHIP_LEVELS, generalize
 K_MIN = 5
 
 
+def require_minimum_k(k: int) -> None:
+    """No caller may weaken the guarantee below K_MIN."""
+    if k < K_MIN:
+        raise ValueError(f"k must be at least {K_MIN}")
+
+
 class KAnonymityError(ValueError):
     """No generalisation level gives every (age band, gender, wave, relationship) cell k people."""
 

@@ -81,10 +81,13 @@ RELATIONSHIP_LEVELS = 3
 
 
 def generalize_relationship(category: str, level: int) -> str:
-    """Level 0 keeps the category; 1 merges the partnered ones; 2 hides the relationship."""
+    """Level 0 keeps the category; 1 merges the partnered ones, and "other" becomes "unknown" so
+    nobody is published with a status they may not have; 2 hides the relationship."""
     if level == 0:
         return category
     if level == 1:
+        if category == "other":
+            return "unknown"
         return category if category in ("single", "unknown") else "in_relationship"
     if level == 2:
         return "unknown"

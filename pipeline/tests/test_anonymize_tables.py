@@ -84,3 +84,16 @@ def test_thin_relationship_cells_are_generalised_not_published() -> None:
     assert data.participants["relationship"].value_counts().to_dict() == {"unknown": 10}
     assert data.summary["relationship_level"] == 2
     assert data.summary["smallest_cell"] == 5
+
+
+def test_k_below_the_minimum_is_refused() -> None:
+    with pytest.raises(ValueError, match="at least 5"):
+        anonymize_profiles(profile_rows(), KEYS, SECRET, k=4)
+
+
+def test_a_missing_survey_flag_fails_safe_to_false() -> None:
+    rows = profile_rows()
+    rows["has_survey"] = pd.array([True, pd.NA] * 6, dtype="boolean")
+    people = anonymize_profiles(rows, KEYS, SECRET).participants
+    assert people["has_survey"].dtype == bool
+    assert int(people["has_survey"].sum()) == 5

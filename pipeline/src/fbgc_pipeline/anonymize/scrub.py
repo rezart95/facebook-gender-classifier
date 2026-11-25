@@ -18,9 +18,10 @@ from fbgc_pipeline.anonymize.columns import (
     PARTICIPANT_COLUMNS,
     published_feature_keys,
 )
-from fbgc_pipeline.anonymize.k_anonymity import smallest_cell
+from fbgc_pipeline.anonymize.k_anonymity import K_MIN, require_minimum_k, smallest_cell
 from fbgc_pipeline.anonymize.relationship import RELATIONSHIPS
 
+__all__ = ["K_MIN", "AnonymizationError", "scrub_check"]
 PID_REGEX = r"P\d{3,}"
 PARTICIPANT_TEXT = ("pid", "gender", "age_band", "relationship")
 FEATURE_TEXT = ("pid", "feature_key")
@@ -87,6 +88,7 @@ def check_codes(participants: pd.DataFrame, features_long: pd.DataFrame) -> None
 def scrub_check(
     participants: pd.DataFrame, features_long: pd.DataFrame, folder_codes: Iterable[str], k: int
 ) -> None:
+    require_minimum_k(k)
     check_columns("participants", participants, PARTICIPANT_COLUMNS)
     check_columns("features", features_long, FEATURE_COLUMNS)
     check_dtypes(participants, features_long)

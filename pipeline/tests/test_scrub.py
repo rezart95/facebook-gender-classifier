@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from fbgc_pipeline.anonymize.scrub import AnonymizationError, scrub_check
+from fbgc_pipeline.anonymize.scrub import K_MIN, AnonymizationError, scrub_check
 
 
 def tables() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -112,3 +112,10 @@ def test_a_thin_relationship_cell_fails() -> None:
     participants.loc[0, "relationship"] = "married"
     with pytest.raises(AnonymizationError, match="fewer than 5 people"):
         check(participants, features, set())
+
+
+def test_k_below_the_minimum_is_refused() -> None:
+    participants, features = tables()
+    assert K_MIN == 5
+    with pytest.raises(ValueError, match="at least 5"):
+        scrub_check(participants, features, set(), k=K_MIN - 1)
