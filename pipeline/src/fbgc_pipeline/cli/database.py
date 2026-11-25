@@ -22,10 +22,11 @@ LIBPQ_REDIRECTS = frozenset({"PGHOSTADDR", "PGSERVICE"})
 
 
 def sqlite_file_inside_repo(url: URL) -> bool:
-    """A file-based SQLite database whose path resolves inside the repository."""
+    """A file-based SQLite database (plain path or `file:` URI) resolving inside the repository."""
     if url.get_backend_name() != "sqlite" or url.database in (None, "", ":memory:"):
         return False
-    return is_inside(Path(str(url.database)), repo_root())
+    path = str(url.database).removeprefix("file:").split("?", 1)[0]  # sqlite file: URIs
+    return is_inside(Path(path), repo_root())
 
 
 def load(

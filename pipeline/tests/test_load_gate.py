@@ -97,3 +97,25 @@ def test_private_allows_in_memory_and_outside_sqlite(tmp_path: Path) -> None:
         result = CliRunner().invoke(app, args)
         assert "inside the repository" not in result.output
         assert "missing input files" in result.output
+
+
+@pytest.mark.parametrize("query", ["", "?uri=true", "?mode=rwc&uri=true"])
+def test_private_refuses_a_file_uri_inside_the_repo(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, query: str
+) -> None:
+    monkeypatch.chdir(tmp_path)  # outside the repo
+    inside = repo_root() / "never-created-folder" / "private.sqlite"
+    url = f"sqlite:///file:{inside.as_posix()}{query}"
+    result = CliRunner().invoke(app, ["load", "--private", "--database-url", url])
+    assert result.exit_code == 1
+    assert result.output.strip() == "private data must not be written inside the repository"
+    assert not inside.parent.exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_private_allows_a_file_uri_outside_the_repo(tmp_path: Path) -> None:
+    url = f"sqlite:///file:{(tmp_path / 'x.sqlite').as_posix()}?uri=true"
+    args = ["load", "--private", "--database-url", url, "--from", str(tmp_path / "none")]
+    result = CliRunner().invoke(app, args)
+    assert "inside the repository" not in result.output
+    assert "missing input files" in result.output
