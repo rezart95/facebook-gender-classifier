@@ -70,6 +70,11 @@ def build_synthetic(
         numeric_rows(participants, real[list(model.keys)]),
         numeric_rows(people, synthetic.drop(columns="pid")),
     )
+    if not check.passed and check.real_p5 == 0:
+        raise SyntheticPrivacyError(
+            "real rows are not distinct enough for the distance check "
+            "(their 5th percentile distance is 0)"
+        )
     if not check.passed:
         raise SyntheticPrivacyError(
             "synthetic rows sit too close to real rows: 5th percentile "

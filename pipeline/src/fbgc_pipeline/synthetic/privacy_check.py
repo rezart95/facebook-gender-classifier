@@ -26,7 +26,8 @@ class DistanceCheck:
 
     @property
     def passed(self) -> bool:
-        return self.synthetic_p5 >= self.real_p5
+        """Real rows must be distinct themselves, or any synthetic row would pass."""
+        return self.real_p5 > 0 and self.synthetic_p5 >= self.real_p5
 
 
 def column_scale(real: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

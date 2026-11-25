@@ -68,6 +68,14 @@ def test_a_failed_distance_check_raises(monkeypatch: pytest.MonkeyPatch) -> None
         build_synthetic(*anonymized(), default_catalogue(), seed=1)
 
 
+def test_real_rows_that_are_not_distinct_raise_a_distinct_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(CHECK, lambda real, synthetic: DistanceCheck(5.0, 0.0))
+    with pytest.raises(SyntheticPrivacyError, match="not distinct enough"):
+        build_synthetic(*anonymized(), default_catalogue(), seed=1)
+
+
 def test_write_synthetic_writes_lf_csv_and_parquet(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

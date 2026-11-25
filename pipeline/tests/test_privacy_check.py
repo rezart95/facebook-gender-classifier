@@ -38,3 +38,10 @@ def test_missing_values_count_as_the_mean() -> None:
     synthetic = np.array([[np.nan, 2.0]])
     check = distance_to_closest_record(real, synthetic)
     assert check.synthetic_p5 == pytest.approx(0.0)
+
+
+def test_identical_real_rows_never_pass() -> None:
+    real = np.zeros((10, 3))
+    check = distance_to_closest_record(real, real + 5.0)
+    assert check.real_p5 == 0.0
+    assert not check.passed
