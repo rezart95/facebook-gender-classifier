@@ -1,0 +1,401 @@
+{
+  "trace_version": 1,
+  "profile_label": "fake-01",
+  "fake": true,
+  "stages": [
+    {
+      "stage": "raw_html",
+      "page": "html/messages.htm",
+      "snippet": "<div class=\"thread\">Nadia Dossi, Lolita Tozzo<div class=\"message\"><div class=\"message_header\"><span class=\"user\">Nadia Dossi</span><span class=\"meta\">Domenica 18 gennaio 2015 alle ore 1:15 UTC+01</span></div></div><p>ok perfetto, a dopo ;)</p><div class=\"message\"><div class=\"message_header\"><span class=\"user\">Nadia Dossi</span><span class=\"meta\">Gioved\u00ec 5 marzo 2015 alle ore 0:08 UTC+01</span></div></div><p>Non lo so... boh</p><div class=\"message\"><div class=\"message_header\"><span class=\"user\">Lolita Tozzo</span><span class=\"meta\">Domenica 15 marzo 2015 alle ore 13:15 UTC+01</span></div></div><p>secondo me hai ragione</p><div class=\"message\"><div class=\"message_header\"><span class=\"user\">Lolita Tozzo</span><span class=\"meta\">Mercoled\u00ec 18 marzo 2015 alle ore 23:25 UTC+01</span></div></div><p>assolutamente s\u00ec!</p><div class=\"message\"><div class=\"message_header\"><span class=\"user\">Nadia Dossi</span><span class=\"meta\">Sabato 28 marzo 2015 alle ore 19:54 UTC+01</span></div></div><p>capisco, ti ascolto</p><div class=\"message\"><div class=\"message_header\"><span class=\"user\">Nadia Dossi</span><span class=\"meta\">Venerd\u00ec 8 maggio 2015 alle ore 22:33 UTC+02</span></div></div><p>"
+    },
+    {
+      "stage": "parsed_messages",
+      "total": 50,
+      "messages": [
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-01-18T01:15:00+01:00",
+          "text": "ok perfetto, a dopo ;)"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-03-05T00:08:00+01:00",
+          "text": "Non lo so... boh"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Lolita Tozzo",
+          "sent_at": "2015-03-15T13:15:00+01:00",
+          "text": "secondo me hai ragione"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Lolita Tozzo",
+          "sent_at": "2015-03-18T23:25:00+01:00",
+          "text": "assolutamente s\u00ec!"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-03-28T19:54:00+01:00",
+          "text": "capisco, ti ascolto"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-05-08T22:33:00+02:00",
+          "text": "che bello! \ud83d\ude0d"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-08-21T21:59:00+02:00",
+          "text": "secondo me hai ragione"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Lolita Tozzo",
+          "sent_at": "2015-09-08T17:22:00+02:00",
+          "text": "scusa, mi dispiace tanto"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-09-18T23:20:00+02:00",
+          "text": "sicuro? mi sembra strano"
+        },
+        {
+          "thread": 0,
+          "group": false,
+          "sender": "Nadia Dossi",
+          "sent_at": "2015-10-26T13:38:00+02:00",
+          "text": "sempre la solita storia..."
+        }
+      ]
+    },
+    {
+      "stage": "owner_split",
+      "owner": "Nadia Dossi",
+      "owner_messages": 20,
+      "others_messages": 30,
+      "group_threads": 1,
+      "personal_threads": 4
+    },
+    {
+      "stage": "dictionary_hits",
+      "hits": [
+        {
+          "feature": "dict_others_group_ansia",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_group_ascolto",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_bene",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_capisco",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_dispiace",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_domanda",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_group_emotebad",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_emotegood",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_emoteooo",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_emotewink",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_group_esclamativo",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_no",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_others_group_ok",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_group_scusa",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_si",
+          "count": 4.0
+        },
+        {
+          "feature": "dict_others_group_tu",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_group_virgole_punti",
+          "count": 10.0
+        },
+        {
+          "feature": "dict_others_personal_ansia",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_ascolto",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_assolutamente",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_bene",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_capisco",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_dispiace",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_others_personal_domanda",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_personal_emoteahah",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_others_personal_emotewow",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_personal_esclamativo",
+          "count": 5.0
+        },
+        {
+          "feature": "dict_others_personal_impossibile",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_personal_io",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_personal_mai",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_others_personal_no",
+          "count": 4.0
+        },
+        {
+          "feature": "dict_others_personal_ragione",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_scusa",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_others_personal_secondome",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_si",
+          "count": 6.0
+        },
+        {
+          "feature": "dict_others_personal_sicuro",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_others_personal_virgole_punti",
+          "count": 10.0
+        },
+        {
+          "feature": "dict_others_personal_voi",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_group_io",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_group_ragione",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_group_secondome",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_group_sempre",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_group_virgole_punti",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_owner_personal_aiuto",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_ascolto",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_bello",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_boh",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_owner_personal_capisco",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_dispiace",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_owner_personal_domanda",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_emotebad",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_emotewink",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_esclamativo",
+          "count": 3.0
+        },
+        {
+          "feature": "dict_owner_personal_io",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_mai",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_no",
+          "count": 4.0
+        },
+        {
+          "feature": "dict_owner_personal_ok",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_ragione",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_scusa",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_owner_personal_secondome",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_sempre",
+          "count": 2.0
+        },
+        {
+          "feature": "dict_owner_personal_si",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_sicuro",
+          "count": 1.0
+        },
+        {
+          "feature": "dict_owner_personal_virgole_punti",
+          "count": 23.0
+        }
+      ]
+    },
+    {
+      "stage": "features",
+      "values": {
+        "msg_count": 50.0,
+        "msg_n_contacts": 7.0,
+        "msg_chars_mean": 20.2,
+        "msg_contacts_female_share": 0.5,
+        "msg_top1_share": 0.4,
+        "msg_days_active": 48.0,
+        "msg_hour_21": 0.12,
+        "dict_owner_personal_emotegood": 0.0,
+        "dict_owner_personal_emotelove": 0.0,
+        "dict_others_personal_domanda": 2.0,
+        "wall_items_total": 7.0,
+        "friends_accepted": 40.0
+      }
+    },
+    {
+      "stage": "anonymized",
+      "k": 1,
+      "participant": {
+        "pid": "P001",
+        "wave": 1,
+        "gender": "F",
+        "age_band": "22-24",
+        "relationship": "unknown",
+        "has_messages": true,
+        "has_survey": false
+      },
+      "features": {
+        "dict_others_personal_domanda": 2.0,
+        "dict_owner_personal_emotegood": 0.0,
+        "dict_owner_personal_emotelove": 0.0,
+        "friends_accepted": 40.0,
+        "msg_chars_mean": 20.2,
+        "msg_contacts_female_share": 0.5,
+        "msg_count": 50.0,
+        "msg_days_active": 48.0,
+        "msg_hour_21": 0.12,
+        "msg_n_contacts": 7.0,
+        "msg_top1_share": 0.4,
+        "wall_items_total": 7.0
+      }
+    }
+  ]
+}
